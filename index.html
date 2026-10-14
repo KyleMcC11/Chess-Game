@@ -171,6 +171,33 @@
         .shadow-\[0_0_12px_rgba\(250\,204\,21\,0\.45\)\]{box-shadow:0 0 12px rgba(250,204,21,0.45)}
         .shadow-\[0_4px_14px_rgba\(250\,204\,21\,0\.55\)\]{box-shadow:0 4px 14px rgba(250,204,21,0.55)}
     </style>
+
+    <!-- Mobile / phone layout: compact header, collapsible bottom-sheet panels, no page scroll/zoom while playing -->
+    <style id="mobile-patch">
+        html, body { overscroll-behavior: none; }
+        body { -webkit-touch-callout: none; }
+        #canvas-container, #canvas-container canvas { touch-action: none; }
+        header button, nav button, .md-btn { touch-action: manipulation; }
+        #mobile-info-toggle { display: none; }
+        @media (max-width: 820px), (max-height: 500px) {
+            header.fixed { top: max(.5rem, env(safe-area-inset-top)); left: .5rem; right: .5rem; padding: .45rem .6rem; gap: .35rem; border-radius: .9rem; }
+            .brand-subtitle, #turn-subtitle { display: none; }
+            #turn-banner { padding: .3rem .6rem; gap: .4rem; }
+            #turn-title { font-size: .68rem; }
+            header nav { gap: .35rem; }
+            header nav .md-btn, header nav button { padding: .5rem .6rem; font-size: .68rem; min-height: 2.5rem; }
+            /* Left panels become a bottom sheet, hidden until the Info button opens them */
+            #left-panels { left: .5rem; right: .5rem; bottom: max(.5rem, env(safe-area-inset-bottom)); width: auto; transform: translateY(calc(100% + 1rem)); transition: transform .28s ease, visibility 0s linear .28s; visibility: hidden; pointer-events: none; }
+            body.mobile-panels-open #left-panels { transform: none; visibility: visible; transition: transform .28s ease; pointer-events: auto; }
+            #right-panels { display: none !important; }
+            .unit-3d-badge { transform: translate(-50%, -100%) scale(.8); }
+            .unit-3d-badge > div { font-size: 8.5px !important; padding: .2rem .4rem !important; }
+            #mobile-info-toggle { display: flex; position: fixed; right: .6rem; bottom: max(.6rem, env(safe-area-inset-bottom)); z-index: 30; align-items: center; gap: .3rem; padding: .55rem .8rem; border-radius: 999px; background: rgba(15, 23, 42, .88); color: #fcd34d; border: 1px solid rgba(251, 191, 36, .4); font-size: .72rem; font-weight: 700; letter-spacing: .04em; cursor: pointer; }
+            #mobile-info-toggle:active { background: rgba(30, 41, 59, .95); }
+            #promotion-modal > div, #gameover-modal > div { width: min(94vw, 26rem); max-height: 92vh; overflow-y: auto; }
+            #promotion-modal button, #gameover-modal button { min-height: 2.75rem; }
+        }
+    </style>
 </head>
 <body class="relative w-full h-full overflow-hidden">
 
@@ -195,7 +222,7 @@
                     <h1 class="font-cinzel font-bold text-base sm:text-lg tracking-wider text-white leading-none">CULLODEN 1746</h1>
                     <span class="hidden md:inline-block text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/20">3D Historical Chess</span>
                 </div>
-                <p class="text-[11px] text-slate-400 hidden sm:block mt-0.5">Jacobite Highlanders (White) vs British Red Coats (Black)</p>
+                <p class="brand-subtitle text-[11px] text-slate-400 hidden sm:block mt-0.5">Jacobite Highlanders (White) vs British Red Coats (Black)</p>
             </div>
         </div>
 
@@ -264,7 +291,7 @@
     </header>
 
     <!-- Left HUD: Army Casualties & Selected Soldier Inspector -->
-    <aside class="fixed bottom-3 left-3 z-20 flex flex-col gap-2.5 w-72 sm:w-80 pointer-events-none">
+    <aside id="left-panels" class="fixed bottom-3 left-3 z-20 flex flex-col gap-2.5 w-72 sm:w-80 pointer-events-none">
         <!-- Selected Piece Historical Inspector Card -->
         <div id="unit-inspector" class="md-card rounded-2xl p-3.5 pointer-events-auto transition-opacity duration-200">
             <div class="flex items-center justify-between mb-1.5">
@@ -298,7 +325,7 @@
     </aside>
 
     <!-- Right HUD: Battle Chronicle (Move History) & Controls Legend -->
-    <aside class="fixed bottom-3 right-3 z-20 hidden md:flex flex-col gap-2.5 w-64 pointer-events-none">
+    <aside id="right-panels" class="fixed bottom-3 right-3 z-20 hidden md:flex flex-col gap-2.5 w-64 pointer-events-none">
         <div class="md-card rounded-2xl p-3.5 pointer-events-auto flex flex-col max-h-60">
             <div class="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
                 <span class="font-cinzel text-xs font-bold tracking-wider text-amber-300 uppercase">Battle Chronicle</span>
@@ -2031,7 +2058,7 @@
             cameraState.isDragging = false;
 
             // Treat as board click if pointer barely dragged
-            if (cameraState.dragDistance < 8) {
+            if (cameraState.dragDistance < (e.pointerType === 'touch' ? 16 : 8)) {
                 const rect = renderer.domElement.getBoundingClientRect();
                 pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
                 pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -2329,4 +2356,67 @@
         };
     </script>
 
+
+    <!-- Mobile patch: Info toggle, portrait camera fit, pinch-to-zoom -->
+    <script>
+        (function () {
+            // 1. Info button: opens/closes the inspector + captures bottom sheet on small screens.
+            var infoBtn = document.createElement('button');
+            infoBtn.id = 'mobile-info-toggle';
+            infoBtn.type = 'button';
+            infoBtn.textContent = 'Info';
+            infoBtn.addEventListener('click', function () {
+                document.body.classList.toggle('mobile-panels-open');
+            });
+            document.body.appendChild(infoBtn);
+
+            // 2. Portrait camera fit: narrow screens get a wider FOV + pulled-back camera
+            // so the whole board fits instead of being cropped left/right. Desktop untouched.
+            var baseFov = 42;
+            function mobileCameraFit() {
+                var aspect = window.innerWidth / window.innerHeight;
+                var preset = CAMERA_PRESETS[currentCameraPreset];
+                var fov = baseFov, mult = 1, phi = preset.phi;
+                if (aspect < 1) {
+                    var k = 1 - aspect;              // 0 on square, ~0.54 on a portrait phone
+                    fov = Math.min(75, baseFov + k * 48); // up to ~68deg vertical FOV
+                    mult = 1 + k * 1.0;              // pull back up to ~1.5x
+                    phi = Math.max(0.5, preset.phi - k * 0.55); // more top-down so the board reads
+                }
+                camera.fov = fov;
+                camera.updateProjectionMatrix();
+                cameraState.targetRadius = preset.radius * mult;
+                cameraState.targetPhi = phi;
+            }
+            var _origPreset = setCameraPreset;
+            setCameraPreset = function (index) { _origPreset(index); mobileCameraFit(); };
+            window.addEventListener('resize', mobileCameraFit);
+            mobileCameraFit();
+
+            // 3. Pinch-to-zoom (two-finger). The main pointer handlers only know
+            // single-pointer orbit, so pinch is tracked on touch events: while two
+            // fingers are down, orbit is paused and the spread controls the zoom.
+            var pinchDist = 0;
+            var canvas = renderer.domElement;
+            canvas.addEventListener('touchstart', function (e) {
+                if (e.touches.length === 2) {
+                    pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    cameraState.isDragging = false;   // pause orbit during pinch
+                    cameraState.dragDistance = 999;   // never treat a pinch as a board tap
+                }
+            }, { passive: true });
+            canvas.addEventListener('touchmove', function (e) {
+                if (e.touches.length === 2 && pinchDist > 0) {
+                    e.preventDefault(); // stop the browser pinch-zooming the page
+                    var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    if (d > 0) {
+                        cameraState.targetRadius = Math.max(6, Math.min(22, cameraState.targetRadius * (pinchDist / d)));
+                        pinchDist = d;
+                    }
+                }
+            }, { passive: false });
+            canvas.addEventListener('touchend', function () { pinchDist = 0; }, { passive: true });
+            canvas.addEventListener('touchcancel', function () { pinchDist = 0; }, { passive: true });
+        })();
+    </script>
 </body></html>
