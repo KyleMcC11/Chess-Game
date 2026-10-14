@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Culloden 1746: Celtic vs Red Coats 3D Chess</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS is baked into the <style> block below (saved snapshot) + patch for JS-set classes. No Tailwind script needed. -->
+    <!-- Vendored locally so the game works even if a CDN is down/blocked. three.min.js = Three.js 0.147 (last global THREE build); chess.min.js = chess.js 0.10.3 (old in_check()/game_over() API this game uses). -->
+    <script src="js/three.min.js"></script>
+    <script src="js/chess.min.js"></script>
+
+    <style>
+        :root {
+            --md-surface: rgba(24, 28, 34, 0.86);
+            --md-surface-elevated: rgba(34, 40, 49, 0.92);
+            --md-border: rgba(255, 255, 255, 0.1);
+            --celtic-accent: #2b7a4b;
+            --celtic-light: #52b788;
+            --redcoat-accent: #b91c1c;
+            --redcoat-light: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at 50% 35%, #2b323c 0%, #14181f 70%, #0b0e12 100%);
+            color: #f1f5f9;
+        }
+
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+
+        #canvas-container {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #labels-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .unit-3d-badge {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.15s ease;
+        }
+
+        .unit-3d-badge:hover {
+            transform: translate(-50%, -106%) scale(1.06);
+            z-index: 30;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+
+        /* Material Design Elevated Card */
+        .md-card {
+            background: var(--md-surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--md-border);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.35);
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Material Ripple Button */
+        .md-btn {
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s ease, box-shadow 0.2s ease;
+        }
+
+        .md-btn:active {
+            transform: scale(0.97);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-anim 550ms linear;
+            background-color: rgba(255, 255, 255, 0.28);
+            pointer-events: none;
+        }
+
+        @keyframes ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.35);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.6);
+        }
+
+        /* Pulse animation for check/turn */
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
+        .check-alert {
+            animation: pulse-border 1.5s infinite;
+        }
+
+        /* Floating 3D Unit Nameplates */
+        .unit-tag {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            pointer-events: none;
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.pointer-events-auto{pointer-events:auto}.fixed{position:fixed}.relative{position:relative}.inset-0{inset:0px}.bottom-3{bottom:0.75rem}.left-3{left:0.75rem}.right-3{right:0.75rem}.top-3{top:0.75rem}.z-20{z-index:20}.z-40{z-index:40}.mb-1\.5{margin-bottom:0.375rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-5{margin-bottom:1.25rem}.mb-6{margin-bottom:1.5rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-2\.5{margin-top:0.625rem}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-2{height:0.5rem}.h-3{height:0.75rem}.h-4{height:1rem}.h-6{height:1.5rem}.h-9{height:2.25rem}.h-full{height:100%}.max-h-60{max-height:15rem}.min-h-\[26px\]{min-height:26px}.w-10{width:2.5rem}.w-2{width:0.5rem}.w-3{width:0.75rem}.w-4{width:1rem}.w-6{width:1.5rem}.w-64{width:16rem}.w-72{width:18rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-md{border-radius:0.375rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-amber-400\/20{border-color:rgb(251 191 36 / 0.2)}.border-amber-400\/30{border-color:rgb(251 191 36 / 0.3)}.border-amber-400\/35{border-color:rgb(251 191 36 / 0.35)}.border-emerald-500\/30{border-color:rgb(16 185 129 / 0.3)}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-white\/15{border-color:rgb(255 255 255 / 0.15)}.border-white\/5{border-color:rgb(255 255 255 / 0.05)}.border-amber-400\/40{border-color:rgb(251 191 36 / 0.4)}.border-amber-400\/80{border-color:rgb(251 191 36 / 0.8)}.border-emerald-500\/40{border-color:rgb(16 185 129 / 0.4)}.border-white\/60{border-color:rgb(255 255 255 / 0.6)}.bg-amber-500\/15{background-color:rgb(245 158 11 / 0.15)}.bg-amber-500\/20{background-color:rgb(245 158 11 / 0.2)}.bg-black\/70{background-color:rgb(0 0 0 / 0.7)}.bg-black\/75{background-color:rgb(0 0 0 / 0.75)}.bg-emerald-400{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/20{background-color:rgb(16 185 129 / 0.2)}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.bg-emerald-900\/95{background-color:rgb(6 78 59 / 0.95)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-emerald-600{--tw-gradient-from:#059669 var(--tw-gradient-from-position);--tw-gradient-to:rgb(5 150 105 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-emerald-700{--tw-gradient-from:#047857 var(--tw-gradient-from-position);--tw-gradient-to:rgb(4 120 87 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-amber-500\/95{--tw-gradient-from:rgb(245 158 11 / 0.95) var(--tw-gradient-from-position);--tw-gradient-to:rgb(245 158 11 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-slate-800{--tw-gradient-to:rgb(30 41 59 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #1e293b var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-yellow-400\/95{--tw-gradient-to:rgb(250 204 21 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), rgb(250 204 21 / 0.95) var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-red-800{--tw-gradient-to:#991b1b var(--tw-gradient-to-position)}.to-teal-700{--tw-gradient-to:#0f766e var(--tw-gradient-to-position)}.to-amber-500\/95{--tw-gradient-to:rgb(245 158 11 / 0.95) var(--tw-gradient-to-position)}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-7{padding:1.75rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.pb-2{padding-bottom:0.5rem}.pr-1{padding-right:0.25rem}.text-left{text-align:left}.text-center{text-align:center}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[9\.5px\]{font-size:9.5px}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-extrabold{font-weight:800}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254 / var(--tw-text-opacity, 1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113 / var(--tw-text-opacity, 1))}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252 / var(--tw-text-opacity, 1))}.text-sky-400{--tw-text-opacity:1;color:rgb(56 189 248 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_10px_\#34d399\]{--tw-shadow:0 0 10px #34d399;--tw-shadow-colored:0 0 10px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_12px_rgba\(250\2c 204\2c 21\2c 0\.45\)\]{--tw-shadow:0 0 12px rgba(250,204,21,0.45);--tw-shadow-colored:0 0 12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_4px_14px_rgba\(250\2c 204\2c 21\2c 0\.55\)\]{--tw-shadow:0 4px 14px rgba(250,204,21,0.55);--tw-shadow-colored:0 4px 14px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:bg-amber-500\/30:hover{background-color:rgb(245 158 11 / 0.3)}.hover\:bg-emerald-900\/60:hover{background-color:rgb(6 78 59 / 0.6)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700\/90:hover{background-color:rgb(51 65 85 / 0.9)}.hover\:from-emerald-500:hover{--tw-gradient-from:#10b981 var(--tw-gradient-from-position);--tw-gradient-to:rgb(16 185 129 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-teal-600:hover{--tw-gradient-to:#0d9488 var(--tw-gradient-to-position)}.disabled\:opacity-40:disabled{opacity:0.4}@media (min-width: 640px){.sm\:block{display:block}.sm\:inline{display:inline}.sm\:w-80{width:20rem}.sm\:gap-2{gap:0.5rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-\[11px\]{font-size:11px}}@media (min-width: 768px){.md\:inline-block{display:inline-block}.md\:flex{display:flex}}</style>
+    <!-- Patch: Tailwind classes only set by JS at runtime (not in the baked snapshot) -->
+    <style>
+        .bg-amber-400{background-color:rgb(251 191 36)}
+        .bg-red-500\/20{background-color:rgb(239 68 68 / 0.2)}
+        .bg-slate-900\/50{background-color:rgb(15 23 42 / 0.5)}
+        .bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}
+        .bg-slate-900\/88{background-color:rgb(15 23 42 / 0.88)}
+        .border-red-500\/30{border-color:rgb(239 68 68 / 0.3)}
+        .text-red-300{color:rgb(252 165 165)}
+        .text-right{text-align:right}
+        .shadow-\[0_0_10px_\#34d399\]{box-shadow:0 0 10px #34d399}
+        .shadow-\[0_0_10px_\#ef4444\]{box-shadow:0 0 10px #ef4444}
+        .shadow-\[0_0_10px_\#fbbf24\]{box-shadow:0 0 10px #fbbf24}
+        .shadow-\[0_0_12px_rgba\(250\,204\,21\,0\.45\)\]{box-shadow:0 0 12px rgba(250,204,21,0.45)}
+        .shadow-\[0_4px_14px_rgba\(250\,204\,21\,0\.55\)\]{box-shadow:0 4px 14px rgba(250,204,21,0.55)}
+    </style>
+</head>
+<body class="relative w-full h-full overflow-hidden">
+
+    <!-- 3D Viewport Container -->
+    <div id="canvas-container"><!-- Three.js appends its live canvas here on load. --></div>
+
+    <!-- 3D Floating Labels Overlay for Bonnie Prince Charlie & 1-8 Front-Line Clan Regiments -->
+    <div id="labels-overlay">
+        </div>
+
+    <!-- Single-Level Material Top App Bar -->
+    <header class="fixed top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 md-card rounded-2xl px-4 py-2.5">
+        <!-- Brand & Historical Subtitle -->
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-700 via-slate-800 to-red-800 flex items-center justify-center border border-white/15 shadow-inner">
+                <svg class="w-6 h-6 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M9.5 6.5L21 18v3h-3L6.5 9.5M11 5L5 11M8 8L4 4M5 3L3 5"></path>
+                </svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-cinzel font-bold text-base sm:text-lg tracking-wider text-white leading-none">CULLODEN 1746</h1>
+                    <span class="hidden md:inline-block text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/20">3D Historical Chess</span>
+                </div>
+                <p class="text-[11px] text-slate-400 hidden sm:block mt-0.5">Jacobite Highlanders (White) vs British Red Coats (Black)</p>
+            </div>
+        </div>
+
+        <!-- Turn & Battle Status Indicator Pill -->
+        <div id="turn-banner" class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-white/10">
+            <span id="turn-dot" class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]"></span>
+            <div class="text-left">
+                <div id="turn-title" class="text-xs font-bold tracking-wide text-white uppercase">Jacobite Clans' Turn (White)</div>
+                <div id="turn-subtitle" class="text-[10px] text-slate-400">Select a Highlander to march</div>
+            </div>
+        </div>
+
+        <!-- Single-Level Action Controls -->
+        <nav class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+            <!-- Spot Prince & 1-8 Regiments Badge Toggle -->
+            <button id="btn-clans" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-xs font-semibold text-amber-300 border border-amber-400/35 shadow-sm" title="Highlight Bonnie Prince Charlie &amp; the 1-8 Front-Line Clan Regiments">
+                <svg class="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                </svg>
+                <span id="clans-label">Spot Prince &amp; 1–8 Clans</span>
+            </button>
+
+            <!-- Game Mode Toggle -->
+            <button id="btn-mode" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Switch Game Mode">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                <span id="mode-label">vs AI (Commander)</span>
+            </button>
+
+            <!-- Camera Preset Toggle -->
+            <button id="btn-camera" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Cycle Camera Angle">
+                <svg class="w-4 h-4 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                <span id="camera-label">Cam: Highlanders</span>
+            </button>
+
+            <!-- Undo Move -->
+            <button id="btn-undo" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10 disabled:opacity-40" title="Undo Last Move" disabled="">
+                <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                </svg>
+                <span class="hidden sm:inline">Undo</span>
+            </button>
+
+            <!-- Sound Effects Toggle -->
+            <button id="btn-sound" class="md-btn flex items-center justify-center w-9 h-9 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Toggle Battle Audio">
+                <svg id="icon-sound-on" class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                </svg>
+                <svg id="icon-sound-off" class="w-4 h-4 text-slate-400 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
+                </svg>
+            </button>
+
+            <!-- New Battle Button -->
+            <button id="btn-reset" class="md-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-xs font-semibold text-white shadow-md">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>New Battle</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Left HUD: Army Casualties & Selected Soldier Inspector -->
+    <aside class="fixed bottom-3 left-3 z-20 flex flex-col gap-2.5 w-72 sm:w-80 pointer-events-none">
+        <!-- Selected Piece Historical Inspector Card -->
+        <div id="unit-inspector" class="md-card rounded-2xl p-3.5 pointer-events-auto transition-opacity duration-200">
+            <div class="flex items-center justify-between mb-1.5">
+                <span id="inspector-faction" class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">2 - Clanranald's Regt. • Clan MacDonald of Clanranald</span>
+                <span id="inspector-square" class="text-xs font-mono text-amber-300">Square B2</span>
+            </div>
+            <h2 id="inspector-name" class="font-cinzel font-bold text-sm text-white">Alan MacDonald of Clanranald</h2>
+            <p id="inspector-desc" class="text-[11px] text-slate-300 mt-1 leading-relaxed">2 - Clanranald's Regt. (Square B2): Represented by the celebrated Clanranald chieftain Alan MacDonald of Clanranald. Wearing the historic Clanranald crimson, forest green, navy &amp; white-line sett with 3 golden eagle feathers and gilded targe.</p>
+        </div>
+
+        <!-- Casualties / Captured Units Tray -->
+        <div class="md-card rounded-2xl p-3 pointer-events-auto">
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300 mb-1.5">
+                <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    Jacobite Captures
+                </span>
+                <span id="score-white" class="text-emerald-400 font-mono text-xs"></span>
+            </div>
+            <div id="captured-by-white" class="min-h-[26px] flex flex-wrap items-center gap-1 text-sm bg-slate-900/60 rounded-lg px-2 py-1 border border-white/5"><span class="text-[11px] text-slate-500 italic">No Red Coats shattered yet</span></div>
+
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300 mt-2.5 mb-1.5">
+                <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    Red Coat Captures
+                </span>
+                <span id="score-black" class="text-red-400 font-mono text-xs"></span>
+            </div>
+            <div id="captured-by-black" class="min-h-[26px] flex flex-wrap items-center gap-1 text-sm bg-slate-900/60 rounded-lg px-2 py-1 border border-white/5"><span class="text-[11px] text-slate-500 italic">No Highlanders shattered yet</span></div>
+        </div>
+    </aside>
+
+    <!-- Right HUD: Battle Chronicle (Move History) & Controls Legend -->
+    <aside class="fixed bottom-3 right-3 z-20 hidden md:flex flex-col gap-2.5 w-64 pointer-events-none">
+        <div class="md-card rounded-2xl p-3.5 pointer-events-auto flex flex-col max-h-60">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
+                <span class="font-cinzel text-xs font-bold tracking-wider text-amber-300 uppercase">Battle Chronicle</span>
+                <span id="move-count-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Turn 1</span>
+            </div>
+            <div id="move-history" class="overflow-y-auto space-y-1 pr-1 text-xs font-mono text-slate-300 flex-1"><div class="text-[11px] text-slate-500 italic py-2 text-center">16 April 1746 — The armies stand arrayed across Drumossie Moor.</div></div>
+        </div>
+
+        <div class="md-card rounded-xl px-3 py-2 pointer-events-auto text-[11px] text-slate-400 flex items-center justify-between">
+            <span><strong class="text-slate-200">Orbit:</strong> Drag Mouse/Touch</span>
+            <span><strong class="text-slate-200">Zoom:</strong> Scroll</span>
+        </div>
+    </aside>
+
+    <!-- Pawn Battlefield Promotion Modal -->
+    <div id="promotion-modal" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="md-card rounded-3xl p-6 max-w-md w-full border border-amber-400/30 text-center">
+            <h3 class="font-cinzel text-xl font-bold text-amber-300">Battlefield Commission</h3>
+            <p class="text-xs text-slate-300 mt-1 mb-5">Your soldier has crossed the enemy lines! Choose a rank for promotion:</p>
+            <div class="grid grid-cols-2 gap-3" id="promotion-options">
+                <button data-piece="q" class="md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1">
+                    <span class="text-lg font-cinzel font-bold text-amber-300">Queen / General</span>
+                    <span class="text-[11px] text-slate-400">Lord George Murray / Gen. Hawley</span>
+                </button>
+                <button data-piece="r" class="md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1">
+                    <span class="text-lg font-cinzel font-bold text-sky-300">Rook / Heavy</span>
+                    <span class="text-[11px] text-slate-400">War Piper / Royal Artillery</span>
+                </button>
+                <button data-piece="b" class="md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1">
+                    <span class="text-lg font-cinzel font-bold text-purple-300">Bishop / Guard</span>
+                    <span class="text-[11px] text-slate-400">Lochaber Axeman / Grenadier</span>
+                </button>
+                <button data-piece="n" class="md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1">
+                    <span class="text-lg font-cinzel font-bold text-emerald-300">Knight / Cavalry</span>
+                    <span class="text-[11px] text-slate-400">FitzJames Horse / Cobham Dragoon</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- End-of-Battle Modal -->
+    <div id="gameover-modal" class="fixed inset-0 z-40 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="md-card rounded-3xl p-7 max-w-md w-full border border-white/15 text-center shadow-2xl">
+            <div id="gameover-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-amber-500/20 text-amber-300 border border-amber-400/30 mb-3">
+                Decisive Victory
+            </div>
+            <h2 id="gameover-title" class="font-cinzel text-2xl sm:text-3xl font-bold text-white">Victory on Culloden Moor</h2>
+            <p id="gameover-desc" class="text-sm text-slate-300 mt-2 mb-6 leading-relaxed">
+                The opposing commander has been surrounded and their line shattered.
+            </p>
+            <div class="flex items-center justify-center gap-3">
+                <button id="btn-modal-new" class="md-btn px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-sm font-semibold text-white shadow-lg">
+                    Fight Another Battle
+                </button>
+                <button id="btn-modal-close" class="md-btn px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-medium text-slate-200 border border-white/10">
+                    Inspect Board
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * PROCEDURAL BATTLE AUDIO ENGINE (Web Audio API - No External Assets Required)
+         */
+        class BattleAudio {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playMarchStep() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(110, now);
+                osc.frequency.exponentialRampToValueAtTime(45, now + 0.09);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+
+            playSelect() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(520, now);
+                osc.frequency.exponentialRampToValueAtTime(680, now + 0.06);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+
+            playAttackStrike(isRedcoat) {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+
+                if (isRedcoat) {
+                    // Musket / Cannon sharp crack
+                    const bufferSize = this.ctx.sampleRate * 0.18;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.04));
+                    }
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(900, now);
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.38, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    noise.start(now);
+                } else {
+                    // Highland Broadsword metallic ring
+                    [980, 1460, 2120].forEach((freq, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, now);
+                        osc.frequency.exponentialRampToValueAtTime(freq * 0.85, now + 0.22);
+                        gain.gain.setValueAtTime(0.08 / (idx + 1), now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.23);
+                    });
+                }
+            }
+
+            playShatter() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                // Low thud + crystalline scatter bursts
+                for (let i = 0; i < 5; i++) {
+                    const delay = i * 0.035;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(240 + Math.random() * 380, now + delay);
+                    osc.frequency.exponentialRampToValueAtTime(60, now + delay + 0.14);
+                    gain.gain.setValueAtTime(0.12, now + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + delay);
+                    osc.stop(now + delay + 0.16);
+                }
+            }
+        }
+
+        const soundFX = new BattleAudio();
+
+        /**
+         * HISTORICAL 1–8 JACOBITE FRONT-LINE ORDER OF BATTLE (Squares a2 to h2)
+         * Strictly aligned to the 8 regiments in the historical Culloden list:
+         * 1 - Glengarry's Regt. (a2)
+         * 2 - Clanranald's Regt. (b2) — Alan MacDonald of Clanranald
+         * 3 - Keppoch's Regt. (c2)
+         * 4 - Chisholm's Regt. (d2)
+         * 5 - Macleans & Maclachlans (e2)
+         * 6 - Monaltrie's Regt. (f2)
+         * 7 - Lady Mackintosh's Regt. (g2)
+         * 8 - Lovat's Regt. (h2)
+         */
+        const JACOBITE_CLAN_CHIEFS = {
+            a2: {
+                orderNum: 1,
+                regiment: "1 - Glengarry's Regt.",
+                clan: 'Clan MacDonell of Glengarry',
+                name: 'Donald MacDonell of Lochgarry',
+                shortLabel: "#1 Glengarry • Lochgarry",
+                feathers: 3,
+                tartanColors: ['#7f1d1d', '#064e3b', '#111827', '#f8fafc'],
+                desc: "1 - Glengarry's Regt. (Square A2): Commanded by Donald MacDonell of Lochgarry on the far left of the Jacobite line. Clad in Glengarry bark-red, dark green & black tartan with three eagle feathers."
+            },
+            b2: {
+                orderNum: 2,
+                regiment: "2 - Clanranald's Regt.",
+                clan: 'Clan MacDonald of Clanranald',
+                name: 'Alan MacDonald of Clanranald',
+                shortLabel: "#2 Clanranald • Alan MacDonald",
+                feathers: 3,
+                isHighlightedClanranald: true,
+                tartanColors: ['#991b1b', '#14532d', '#1e3a8a', '#f8fafc'],
+                desc: "2 - Clanranald's Regt. (Square B2): Represented by the celebrated Clanranald chieftain Alan MacDonald of Clanranald. Wearing the historic Clanranald crimson, forest green, navy & white-line sett with 3 golden eagle feathers and gilded targe."
+            },
+            c2: {
+                orderNum: 3,
+                regiment: "3 - Keppoch's Regt.",
+                clan: 'Clan MacDonald of Keppoch',
+                name: 'Alexander MacDonald of Keppoch',
+                shortLabel: "#3 Keppoch • Alex. MacDonald",
+                feathers: 3,
+                tartanColors: ['#b91c1c', '#14532d', '#1e40af', '#fbbf24'],
+                desc: "3 - Keppoch's Regt. (Square C2): Led by Chief Alexander MacDonald of Keppoch, who famously charged heroic and pistol-in-hand with broadsword drawn. Wearing Keppoch crimson & pine-green tartan."
+            },
+            d2: {
+                orderNum: 4,
+                regiment: "4 - Chisholm's Regt.",
+                clan: 'Clan Chisholm',
+                name: 'Roderick Chisholm of Comar',
+                shortLabel: "#4 Chisholm • Roderick of Comar",
+                feathers: 3,
+                tartanColors: ['#dc2626', '#15803d', '#1e3a8a', '#ffffff'],
+                desc: "4 - Chisholm's Regt. (Square D2): Led by Roderick Chisholm of Comar, youngest son of the Chief of Clan Chisholm, alongside their famous piper Kenneth MacKay. Clad in Chisholm scarlet, fern green & white tartan."
+            },
+            e2: {
+                orderNum: 5,
+                regiment: "5 - Macleans & Maclachlans",
+                clan: 'Clans MacLean & MacLachlan',
+                name: 'Charles MacLean of Drimnin & Col. MacLachlan',
+                shortLabel: "#5 Macleans & Maclachlans",
+                feathers: 3,
+                tartanColors: ['#be123c', '#166534', '#172554', '#facc15'],
+                desc: "5 - Macleans & Maclachlans (Square E2): Combined Highland regiment commanded by Charles MacLean of Drimnin and Col. Lachlan MacLachlan of MacLachlan, who led a fierce charge into the teeth of Barrel's Regiment."
+            },
+            f2: {
+                orderNum: 6,
+                regiment: "6 - Monaltrie's Regt.",
+                clan: 'Clan Farquharson',
+                name: 'Francis Farquharson of Monaltrie',
+                shortLabel: "#6 Monaltrie • Farquharson",
+                feathers: 2,
+                tartanColors: ['#14532d', '#1e3a8a', '#dc2626', '#facc15'],
+                desc: "6 - Monaltrie's Regt. (Square F2): Commanded by Francis Farquharson of Monaltrie ('The Baron Ban'), leading the Aberdeenshire Farquharsons in dark forest green, navy, red & yellow-stripe tartan."
+            },
+            g2: {
+                orderNum: 7,
+                regiment: "7 - Lady Mackintosh's Regt.",
+                clan: 'Clan Chattan Confederation',
+                name: 'Col. Alexander MacGillivray of Dunmaglass',
+                shortLabel: "#7 Lady Mackintosh • MacGillivray",
+                feathers: 3,
+                tartanColors: ['#dc2626', '#166534', '#1d4ed8', '#fde047'],
+                desc: "7 - Lady Mackintosh's Regt. (Square G2): Raised by 'Colonel Anne' (Lady Anne Farquharson-Mackintosh) and led in the charge by Colonel Alexander MacGillivray of Dunmaglass at the center-right."
+            },
+            h2: {
+                orderNum: 8,
+                regiment: "8 - Lovat's Regt.",
+                clan: 'Clan Fraser of Lovat',
+                name: 'Charles Fraser of Inverallochie',
+                shortLabel: "#8 Lovat's Regt. • Inverallochie",
+                feathers: 2,
+                tartanColors: ['#ef4444', '#15803d', '#1e3a8a', '#f8fafc'],
+                desc: "8 - Lovat's Regt. (Square H2): Commanded on the field by Lt.-Col. Charles Fraser of Inverallochie on the Jacobite right wing. Dressed in bright Fraser red, green & white tartan."
+            }
+        };
+
+        const UNIT_LORE = {
+            w: {
+                faction: 'Jacobite Highlanders (Celtic)',
+                p: {
+                    name: 'Highland Clan Chieftain (1–8 Front Line)',
+                    desc: 'Commander of one of the first 8 historic Jacobite regiments at Culloden, armed with basket-hilted broadsword, spiked targe, and eagle-feathered blue bonnet.'
+                },
+                r: {
+                    name: 'Highland War Piper & Rampart (Atholl / Perth Reserve)',
+                    desc: 'Clan piper with Great Highland Bagpipes atop a fortified cairn, rallying the 8 front-line regiments across Drumossie Moor.'
+                },
+                n: {
+                    name: "FitzJames's Jacobite Horse",
+                    desc: 'Mounted Jacobite cavalryman bearing a claymore and tartan saddlecloth, screening the Prince and flanking enemy formations.'
+                },
+                b: {
+                    name: 'Lochaber Guard Officer (Appin & Lochiel Wing)',
+                    desc: 'Veteran Highland officer from Ardsheal’s Appin & Lochiel’s regiments wielding the formidable Lochaber pole-axe and feathered clan bonnet.'
+                },
+                q: {
+                    name: 'Lord George Murray (Lieutenant-General)',
+                    desc: 'Brilliant Jacobite field tactician in gilded tartan sash, dual flintlock pistols, and basket-hilted broadsword.'
+                },
+                k: {
+                    name: 'Bonnie Prince Charlie (Prince Charles Edward Stuart)',
+                    desc: 'The Young Chevalier at E1 wearing the Royal Stuart scarlet-and-gold tartan coat, white silk sash, Silver Star of the Order of the Thistle, 3 royal eagle feathers, and the Royal Standard of Scotland.'
+                }
+            },
+            b: {
+                faction: 'British Government Army (Red Coats)',
+                p: {
+                    name: "Barrell's 4th Foot Infantryman",
+                    desc: 'Disciplined British line soldier in madder-red coat, white buff crossbelts, tricorn hat, and Brown Bess bayonet musket.'
+                },
+                r: {
+                    name: 'Royal Artillery 3-Pounder Battery',
+                    desc: 'Brass cannon emplacement commanded by Captain Cunningham, crewed by Royal Artillery gunners in dark blue and scarlet coats.'
+                },
+                n: {
+                    name: "Cobham's 10th Dragoon",
+                    desc: 'Heavy British cavalryman mounted on a bay charger with brass-hilted sabre and scarlet dragoon coat.'
+                },
+                b: {
+                    name: 'King’s Grenadier Officer',
+                    desc: 'Elite assault infantryman wearing the tall embroidered mitre cap and wielding a spontoon halberd.'
+                },
+                q: {
+                    name: 'Lt-Gen. Henry Hawley',
+                    desc: 'Senior royalist commander in gold-laced crimson coat, white wig, and polished officer sabre.'
+                },
+                k: {
+                    name: 'Duke of Cumberland (Prince William Augustus)',
+                    desc: 'Commander-in-Chief of His Majesty’s Forces in ornate scarlet-and-gold frock coat and Order of the Garter star.'
+                }
+            }
+        };
+
+        /**
+         * Procedural Canvas Texture Generators for Realistic Tartan, Royal Standard & Red Coat Uniforms
+         */
+        function createTartanTexture(primaryHex = '#14532d', secondaryHex = '#1e3a8a', stripeHex = '#dc2626', goldHex = '#eab308') {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            // Base wool weave
+            ctx.fillStyle = primaryHex;
+            ctx.fillRect(0, 0, 128, 128);
+
+            // Secondary sett blocks
+            ctx.fillStyle = secondaryHex;
+            ctx.globalAlpha = 0.65;
+            for (let i = 0; i < 128; i += 32) {
+                ctx.fillRect(i, 0, 14, 128);
+                ctx.fillRect(0, i, 128, 14);
+            }
+
+            // Crimson & gold over-checks
+            ctx.globalAlpha = 0.85;
+            ctx.strokeStyle = stripeHex;
+            ctx.lineWidth = 3;
+            for (let i = 16; i < 128; i += 32) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 128); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(128, i); ctx.stroke();
+            }
+
+            ctx.strokeStyle = goldHex;
+            ctx.lineWidth = 1.5;
+            for (let i = 7; i < 128; i += 32) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 128); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(128, i); ctx.stroke();
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(2, 2);
+            return tex;
+        }
+
+        function createJacobiteRoyalBannerTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 192;
+            const ctx = canvas.getContext('2d');
+
+            // Crimson Royal Field
+            ctx.fillStyle = '#991b1b';
+            ctx.fillRect(0, 0, 256, 192);
+
+            // Gold Border
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 10;
+            ctx.strokeRect(5, 5, 246, 182);
+
+            // White Saltire Cross rays in center
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 14;
+            ctx.beginPath();
+            ctx.moveTo(20, 20); ctx.lineTo(236, 172);
+            ctx.moveTo(236, 20); ctx.lineTo(20, 172);
+            ctx.stroke();
+
+            // Royal Gold Escutcheon Shield with Red Lion Rampant motif
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(96, 54, 64, 84);
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(102, 60, 52, 72);
+
+            ctx.fillStyle = '#dc2626';
+            ctx.font = 'bold 42px Cinzel, serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🦁', 128, 96);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createRedcoatTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            // Madder Red Wool Coat
+            ctx.fillStyle = '#991b1b';
+            ctx.fillRect(0, 0, 128, 128);
+
+            // Buff lapel facing & brass buttons down center
+            ctx.fillStyle = '#fef3c7';
+            ctx.fillRect(52, 0, 24, 128);
+
+            ctx.fillStyle = '#991b1b';
+            ctx.fillRect(61, 0, 6, 128);
+
+            // White pipe-clayed crossbelts (X pattern)
+            ctx.strokeStyle = '#f8fafc';
+            ctx.lineWidth = 12;
+            ctx.beginPath();
+            ctx.moveTo(10, 0); ctx.lineTo(118, 128);
+            ctx.moveTo(118, 0); ctx.lineTo(10, 128);
+            ctx.stroke();
+
+            // Brass buckle plate in center
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(54, 54, 20, 20);
+
+            const tex = new THREE.CanvasTexture(canvas);
+            return tex;
+        }
+
+        const tartanGreenTex = createTartanTexture('#14532d', '#1e3a8a', '#dc2626', '#facc15');
+        const tartanRoyalTex = createTartanTexture('#b91c1c', '#14532d', '#ffffff', '#facc15');
+        const jacobiteBannerTex = createJacobiteRoyalBannerTexture();
+        const redcoatTorsoTex = createRedcoatTexture();
+
+        // Pre-build custom tartan materials for each of the 1-8 Clan Regiments (a2-h2)
+        const CLAN_TARTAN_MATS = {};
+        Object.keys(JACOBITE_CLAN_CHIEFS).forEach(sq => {
+            const [c1, c2, c3, c4] = JACOBITE_CLAN_CHIEFS[sq].tartanColors;
+            CLAN_TARTAN_MATS[sq] = new THREE.MeshStandardMaterial({
+                map: createTartanTexture(c1, c2, c3, c4),
+                roughness: 0.72
+            });
+        });
+
+        const SHARED_MATS = {
+            skin: new THREE.MeshStandardMaterial({ color: 0xe8be9e, roughness: 0.6 }),
+            celticPlaid: new THREE.MeshStandardMaterial({ map: tartanGreenTex, roughness: 0.75 }),
+            celticRoyalPlaid: new THREE.MeshStandardMaterial({ map: tartanRoyalTex, roughness: 0.65 }),
+            celticPrinceCoat: new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.5, metalness: 0.15 }),
+            celticRoyalBanner: new THREE.MeshStandardMaterial({ map: jacobiteBannerTex, roughness: 0.5, side: THREE.DoubleSide }),
+            silverStar: new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.12 }),
+            celticJacket: new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 }),
+            celticBonnet: new THREE.MeshStandardMaterial({ color: 0x1d3557, roughness: 0.8 }),
+            redCoatTorso: new THREE.MeshStandardMaterial({ map: redcoatTorsoTex, roughness: 0.65 }),
+            redCoatPlain: new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.65 }),
+            whiteBreeches: new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.7 }),
+            blackBoots: new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.5 }),
+            tricornBlack: new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.6 }),
+            steel: new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.85, roughness: 0.22 }),
+            silverStar: new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.12, emissive: 0x38bdf8, emissiveIntensity: 0.25 }),
+            brass: new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.78, roughness: 0.25 }),
+            royalGold: new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.88, roughness: 0.18, emissive: 0xb45309, emissiveIntensity: 0.2 }),
+            wood: new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.75 }),
+            targeLeather: new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.7 }),
+            whiteCockade: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 }),
+            celticBase: new THREE.MeshStandardMaterial({ color: 0x1b4332, metalness: 0.25, roughness: 0.45 }),
+            redcoatBase: new THREE.MeshStandardMaterial({ color: 0x7f1d1d, metalness: 0.25, roughness: 0.45 }),
+            horseCeltic: new THREE.MeshStandardMaterial({ color: 0xd6d3d1, roughness: 0.65 }),
+            horseRedcoat: new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.6 })
+        };
+
+        /**
+         * Builds a complete 3D soldier piece with articulated weapon arm, Clan Chief identity, and Bonnie Prince Charlie regalia
+         */
+        function createSoldierPieceMesh(type, color, clanProfile = null) {
+            const root = new THREE.Group();
+            const isCeltic = color === 'w';
+            const bodyGroup = new THREE.Group();
+            root.add(bodyGroup);
+
+            // Facing direction: Celtic (White, rank 1-2) faces -Z; Red Coats (Black, rank 7-8) face +Z
+            bodyGroup.rotation.y = isCeltic ? Math.PI : 0;
+
+            // Pedestal Base with Gold Rim
+            const isBonniePrince = isCeltic && type === 'k';
+            const isClanranald = Boolean(clanProfile && clanProfile.isHighlightedClanranald);
+            const baseMat = isBonniePrince
+                ? SHARED_MATS.brass
+                : (isCeltic ? SHARED_MATS.celticBase : SHARED_MATS.redcoatBase);
+            const baseCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.43, 0.12, 24), baseMat);
+            baseCyl.position.y = 0.06;
+            baseCyl.castShadow = true;
+            baseCyl.receiveShadow = true;
+            bodyGroup.add(baseCyl);
+
+            const rimTorus = new THREE.Mesh(
+                new THREE.TorusGeometry(0.39, isClanranald ? 0.032 : 0.02, 10, 24),
+                SHARED_MATS.brass
+            );
+            rimTorus.rotation.x = Math.PI / 2;
+            rimTorus.position.y = 0.12;
+            bodyGroup.add(rimTorus);
+
+            // Extra outer halo ring for Bonnie Prince Charlie (e1) and Alan MacDonald of Clanranald (b2)
+            if (isBonniePrince || isClanranald) {
+                const haloMat = new THREE.MeshBasicMaterial({
+                    color: isBonniePrince ? 0xfacc15 : 0x34d399,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.85
+                });
+                const haloRing = new THREE.Mesh(new THREE.RingGeometry(0.44, 0.50, 32), haloMat);
+                haloRing.rotation.x = -Math.PI / 2;
+                haloRing.position.y = 0.02;
+                bodyGroup.add(haloRing);
+            }
+
+            // Weapon Pivot Group for Attack Lunge/Swing Animation
+            const rightArmPivot = new THREE.Group();
+            const leftArmPivot = new THREE.Group();
+
+            // Select specific Clan Tartan if this piece is one of the 1-8 Clan Regiment Chiefs
+            const customPlaidMat = (clanProfile && CLAN_TARTAN_MATS[clanProfile.originSquare])
+                ? CLAN_TARTAN_MATS[clanProfile.originSquare]
+                : null;
+
+            // Helper function to build humanoid soldier core
+            function buildSoldierFigure(scale = 1.0, isRoyal = false) {
+                const fig = new THREE.Group();
+                fig.scale.setScalar(scale);
+
+                // Legs & Boots/Hose
+                const legGeo = new THREE.CylinderGeometry(0.055, 0.05, 0.34, 10);
+                const legMat = isCeltic ? SHARED_MATS.whiteBreeches : SHARED_MATS.blackBoots;
+                const leftLeg = new THREE.Mesh(legGeo, legMat);
+                leftLeg.position.set(-0.085, 0.28, 0);
+                const rightLeg = new THREE.Mesh(legGeo, legMat);
+                rightLeg.position.set(0.085, 0.28, 0);
+                fig.add(leftLeg, rightLeg);
+
+                if (isCeltic) {
+                    // Pleated Tartan Kilt (Feileadh Mòr) - uses specific Clan Tartan for 1-8 Regiments
+                    const kiltMat = customPlaidMat || (isRoyal ? SHARED_MATS.celticRoyalPlaid : SHARED_MATS.celticPlaid);
+                    const kilt = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.21, 0.26, 16), kiltMat);
+                    kilt.position.y = 0.42;
+                    kilt.castShadow = true;
+                    fig.add(kilt);
+
+                    // Sporran pouch in front (gold-tasseled for Bonnie Prince Charlie & Alan of Clanranald)
+                    const sporranMat = (isBonniePrince || isClanranald) ? SHARED_MATS.brass : SHARED_MATS.targeLeather;
+                    const sporran = new THREE.Mesh(new THREE.SphereGeometry(0.052, 10, 10), sporranMat);
+                    sporran.position.set(0, 0.42, 0.17);
+                    fig.add(sporran);
+
+                    // Highland wool jacket torso (Royal Stuart scarlet coat for Bonnie Prince Charlie)
+                    const torsoMat = isBonniePrince
+                        ? SHARED_MATS.celticPrinceCoat
+                        : (isRoyal ? SHARED_MATS.celticRoyalPlaid : SHARED_MATS.celticJacket);
+                    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.135, 0.34, 14), torsoMat);
+                    torso.position.y = 0.67;
+                    torso.castShadow = true;
+                    fig.add(torso);
+
+                    // Belted Plaid Sash across chest
+                    const sashMat = isBonniePrince ? SHARED_MATS.whiteCockade : kiltMat;
+                    const sash = new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.036, 8, 16), sashMat);
+                    sash.rotation.set(0.5, 0, 0.6);
+                    sash.position.y = 0.68;
+                    fig.add(sash);
+
+                    // Chieftain Gold Gorget / Collar for the 1-8 Regiment Commanders
+                    if (clanProfile) {
+                        const gorget = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.016, 8, 16), SHARED_MATS.brass);
+                        gorget.rotation.x = Math.PI / 2;
+                        gorget.position.set(0, 0.83, 0.03);
+                        fig.add(gorget);
+                    }
+                } else {
+                    // British Red Coat Skirt Coattails
+                    const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.205, 0.24, 14), SHARED_MATS.redCoatPlain);
+                    skirt.position.y = 0.43;
+                    skirt.castShadow = true;
+                    fig.add(skirt);
+
+                    // Red Coat Torso with White Crossbelts
+                    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.35, 14), SHARED_MATS.redCoatTorso);
+                    torso.position.y = 0.68;
+                    torso.castShadow = true;
+                    fig.add(torso);
+                }
+
+                // Head
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.115, 14, 14), SHARED_MATS.skin);
+                head.position.y = 0.96;
+                head.castShadow = true;
+                fig.add(head);
+
+                // Bonnie Prince Charlie powdered curls / periwig side-locks
+                if (isBonniePrince) {
+                    [-0.11, 0.11].forEach(wx => {
+                        const curl = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), SHARED_MATS.whiteBreeches);
+                        curl.position.set(wx, 0.95, -0.02);
+                        fig.add(curl);
+                    });
+                }
+
+                // Arms
+                rightArmPivot.position.set(0.19, 0.79, 0);
+                leftArmPivot.position.set(-0.19, 0.79, 0);
+                const armMat = isBonniePrince
+                    ? SHARED_MATS.celticPrinceCoat
+                    : (isCeltic ? SHARED_MATS.celticJacket : SHARED_MATS.redCoatPlain);
+                const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.28, 10), armMat);
+                rArm.position.set(0, -0.11, 0.05);
+                rArm.rotation.x = -Math.PI / 5;
+                rightArmPivot.add(rArm);
+
+                const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.28, 10), armMat);
+                lArm.position.set(0, -0.11, 0.05);
+                lArm.rotation.x = -Math.PI / 6;
+                leftArmPivot.add(lArm);
+
+                fig.add(rightArmPivot, leftArmPivot);
+                return fig;
+            }
+
+            // Helper function for Blue Bonnet (with Clan Chief Eagle Feathers) or Tricorn/Mitre Hat
+            function addHeadgear(parent, style = 'standard', featherCount = 1) {
+                if (isCeltic) {
+                    // Tam o' Shanter / Blue Highland Bonnet
+                    const bonnet = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.115, 0.075, 16), SHARED_MATS.celticBonnet);
+                    bonnet.position.set(0.01, 1.05, 0);
+                    bonnet.rotation.z = -0.14;
+                    parent.add(bonnet);
+
+                    // Diced red-and-white headband rim around bonnet for Clan Chiefs & Prince
+                    const bandRim = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.016, 8, 18), SHARED_MATS.celticRoyalPlaid);
+                    bandRim.rotation.x = Math.PI / 2;
+                    bandRim.position.y = 1.03;
+                    parent.add(bandRim);
+
+                    // White Jacobite Cockade Ribbon
+                    const cockadeSize = style === 'royal' ? 0.046 : 0.035;
+                    const cockade = new THREE.Mesh(new THREE.SphereGeometry(cockadeSize, 10, 10), SHARED_MATS.whiteCockade);
+                    cockade.position.set(-0.125, 1.065, 0.045);
+                    parent.add(cockade);
+
+                    // Eagle Feathers signifying Highland Clan Chieftain rank (3 feathers = Chief, 2 = Chieftain)
+                    const numFeathers = style === 'royal' ? 3 : featherCount;
+                    for (let f = 0; f < numFeathers; f++) {
+                        const feather = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.21, 6), SHARED_MATS.whiteCockade);
+                        const spread = (f - (numFeathers - 1) / 2) * 0.18;
+                        feather.position.set(-0.135 + f * 0.015, 1.17, 0.04 + f * 0.02);
+                        feather.rotation.z = 0.22 + spread;
+                        feather.rotation.x = spread * 0.5;
+                        parent.add(feather);
+                    }
+
+                    if (style === 'royal') {
+                        // Royal Golden Coronet Crest on Bonnie Prince Charlie's Bonnet
+                        const crownRim = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.022, 8, 18), SHARED_MATS.brass);
+                        crownRim.rotation.x = Math.PI / 2;
+                        crownRim.position.y = 1.08;
+                        parent.add(crownRim);
+                    }
+                } else {
+                    if (style === 'mitre') {
+                        const mitre = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.32, 12), SHARED_MATS.redCoatPlain);
+                        mitre.position.y = 1.17;
+                        parent.add(mitre);
+                        const frontPlate = new THREE.Mesh(new THREE.ConeGeometry(0.115, 0.28, 12), SHARED_MATS.brass);
+                        frontPlate.position.set(0, 1.16, 0.02);
+                        parent.add(frontPlate);
+                    } else {
+                        const tricorn = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.05, 3), SHARED_MATS.tricornBlack);
+                        tricorn.position.y = 1.06;
+                        tricorn.rotation.y = Math.PI;
+                        parent.add(tricorn);
+
+                        const trim = new THREE.Mesh(new THREE.CylinderGeometry(0.215, 0.215, 0.015, 3), SHARED_MATS.brass);
+                        trim.position.y = 1.08;
+                        trim.rotation.y = Math.PI;
+                        parent.add(trim);
+                    }
+                }
+            }
+
+            // Build rank-specific models
+            if (type === 'p') {
+                // PAWN: 1-8 Jacobite Clan Regiment Chieftain vs Redcoat Line Infantry
+                const soldier = buildSoldierFigure(isCeltic ? 0.98 : 0.95);
+                const feathers = clanProfile ? clanProfile.feathers : 2;
+                addHeadgear(soldier, isCeltic ? 'officer' : 'standard', feathers);
+                bodyGroup.add(soldier);
+
+                if (isCeltic) {
+                    // Basket-hilted Broadsword
+                    const hilt = new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 8), SHARED_MATS.brass);
+                    hilt.position.set(0, -0.22, 0.14);
+                    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.024, 0.50, 0.042), SHARED_MATS.steel);
+                    blade.position.set(0, 0.04, 0.22);
+                    blade.rotation.x = Math.PI / 6;
+                    rightArmPivot.add(hilt, blade);
+
+                    // Round Spiked Targe Shield studded with brass (Extra ornate for Alan MacDonald of Clanranald)
+                    const targeMat = isClanranald ? SHARED_MATS.celticRoyalPlaid : SHARED_MATS.targeLeather;
+                    const targe = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.032, 18), targeMat);
+                    targe.rotation.z = Math.PI / 2;
+                    targe.position.set(-0.06, -0.14, 0.12);
+
+                    const targeRim = new THREE.Mesh(new THREE.TorusGeometry(0.175, 0.014, 8, 18), SHARED_MATS.brass);
+                    targeRim.rotation.y = Math.PI / 2;
+                    targeRim.position.set(-0.075, -0.14, 0.12);
+
+                    const boss = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.11, 10), SHARED_MATS.brass);
+                    boss.rotation.z = Math.PI / 2;
+                    boss.position.set(-0.10, -0.14, 0.12);
+                    leftArmPivot.add(targe, targeRim, boss);
+                } else {
+                    // Brown Bess Musket + Fixed Socket Bayonet
+                    const musket = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.03, 0.65, 8), SHARED_MATS.wood);
+                    musket.position.set(0, -0.02, 0.18);
+                    musket.rotation.x = Math.PI / 5;
+                    const bayonet = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.26, 6), SHARED_MATS.steel);
+                    bayonet.position.set(0, 0.34, 0.38);
+                    bayonet.rotation.x = Math.PI / 5;
+                    rightArmPivot.add(musket, bayonet);
+                }
+            } else if (type === 'r') {
+                // ROOK: Highland War Piper on Cairn Rampart vs Royal Artillery 3-Pounder Cannon + Gunner
+                if (isCeltic) {
+                    // Stone Cairn Rampart ring
+                    const rampart = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.37, 0.22, 12), SHARED_MATS.steel);
+                    rampart.position.y = 0.2;
+                    bodyGroup.add(rampart);
+
+                    const piper = buildSoldierFigure(0.95);
+                    piper.position.y = 0.1;
+                    addHeadgear(piper, 'officer');
+                    bodyGroup.add(piper);
+
+                    // Great Highland Bagpipes (tartan bag + 3 drones)
+                    const bag = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 10), SHARED_MATS.celticRoyalPlaid);
+                    bag.position.set(-0.06, -0.12, 0.14);
+                    leftArmPivot.add(bag);
+                    for (let d = 0; d < 3; d++) {
+                        const drone = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.42, 8), SHARED_MATS.wood);
+                        drone.position.set(-0.08, 0.12, 0.06 - d * 0.05);
+                        drone.rotation.z = 0.25 + d * 0.08;
+                        leftArmPivot.add(drone);
+                    }
+                    // Claymore at ready in right hand
+                    const sword = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.48, 0.04), SHARED_MATS.steel);
+                    sword.position.set(0, 0.05, 0.18);
+                    rightArmPivot.add(sword);
+                } else {
+                    // Royal Artillery Brass Cannon + Carriage Wheels
+                    const cannonGroup = new THREE.Group();
+                    cannonGroup.position.y = 0.12;
+                    bodyGroup.add(cannonGroup);
+
+                    const wheelGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.04, 16);
+                    const leftWheel = new THREE.Mesh(wheelGeo, SHARED_MATS.wood);
+                    leftWheel.rotation.z = Math.PI / 2;
+                    leftWheel.position.set(-0.2, 0.18, 0.05);
+                    const rightWheel = new THREE.Mesh(wheelGeo, SHARED_MATS.wood);
+                    rightWheel.rotation.z = Math.PI / 2;
+                    rightWheel.position.set(0.2, 0.18, 0.05);
+                    cannonGroup.add(leftWheel, rightWheel);
+
+                    const carriage = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.1, 0.48), SHARED_MATS.wood);
+                    carriage.position.set(0, 0.16, -0.04);
+                    cannonGroup.add(carriage);
+
+                    // Barrel inside rightArmPivot so it recoils/lunges on attack
+                    rightArmPivot.position.set(0, 0.36, 0.06);
+                    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.105, 0.56, 16), SHARED_MATS.brass);
+                    barrel.rotation.x = Math.PI / 2;
+                    barrel.position.z = 0.08;
+                    rightArmPivot.add(barrel);
+                    bodyGroup.add(rightArmPivot);
+
+                    // Artillery gunner behind cannon
+                    const gunner = buildSoldierFigure(0.75);
+                    gunner.position.set(0, 0.02, -0.18);
+                    addHeadgear(gunner, 'standard');
+                    bodyGroup.add(gunner);
+                }
+            } else if (type === 'n') {
+                // KNIGHT: FitzJames's Jacobite Horse vs Cobham's 10th Dragoons
+                const horseMat = isCeltic ? SHARED_MATS.horseCeltic : SHARED_MATS.horseRedcoat;
+                const horse = new THREE.Group();
+                horse.position.y = 0.12;
+                bodyGroup.add(horse);
+
+                // Horse Legs
+                const hLegGeo = new THREE.CylinderGeometry(0.038, 0.03, 0.34, 8);
+                [[-0.1, 0.16], [0.1, 0.16], [-0.1, -0.16], [0.1, -0.16]].forEach(([lx, lz]) => {
+                    const hl = new THREE.Mesh(hLegGeo, horseMat);
+                    hl.position.set(lx, 0.17, lz);
+                    horse.add(hl);
+                });
+
+                // Horse Body & Saddlecloth
+                const hBody = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.24, 0.52), horseMat);
+                hBody.position.set(0, 0.4, 0);
+                horse.add(hBody);
+
+                const clothMat = isCeltic ? SHARED_MATS.celticPlaid : SHARED_MATS.redCoatPlain;
+                const saddleCloth = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, 0.32), clothMat);
+                saddleCloth.position.set(0, 0.43, -0.02);
+                horse.add(saddleCloth);
+
+                // Horse Neck & Head
+                const hNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.11, 0.32, 10), horseMat);
+                hNeck.position.set(0, 0.6, 0.2);
+                hNeck.rotation.x = Math.PI / 5;
+                const hHead = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.13, 0.26), horseMat);
+                hHead.position.set(0, 0.72, 0.32);
+                hHead.rotation.x = Math.PI / 4;
+                horse.add(hNeck, hHead);
+
+                // Mounted Trooper Torso & Sabre
+                const rider = buildSoldierFigure(0.78);
+                rider.position.set(0, 0.34, -0.03);
+                addHeadgear(rider, 'officer');
+                bodyGroup.add(rider);
+
+                const sabre = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.52, 0.04), SHARED_MATS.steel);
+                sabre.position.set(0.04, 0.12, 0.18);
+                sabre.rotation.x = Math.PI / 6;
+                rightArmPivot.add(sabre);
+            } else if (type === 'b') {
+                // BISHOP: Lochaber Guard Officer vs British Grenadier Officer (Tall Mitre + Halberd)
+                const officer = buildSoldierFigure(1.04);
+                addHeadgear(officer, isCeltic ? 'officer' : 'mitre');
+                bodyGroup.add(officer);
+
+                // Polearm (Lochaber Axe or Officer Spontoon)
+                const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.95, 8), SHARED_MATS.wood);
+                shaft.position.set(0, 0.08, 0.15);
+                rightArmPivot.add(shaft);
+
+                const axeBlade = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.26, 4), SHARED_MATS.steel);
+                axeBlade.position.set(0, 0.52, 0.19);
+                axeBlade.rotation.x = Math.PI / 2;
+                rightArmPivot.add(axeBlade);
+            } else if (type === 'q') {
+                // QUEEN: Lord George Murray vs General Henry Hawley
+                const general = buildSoldierFigure(1.12, true);
+                addHeadgear(general, 'officer');
+                bodyGroup.add(general);
+
+                // Gold Epaulettes
+                [-0.19, 0.19].forEach(ex => {
+                    const ep = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 10), SHARED_MATS.brass);
+                    ep.position.set(ex, 0.92, 0);
+                    bodyGroup.add(ep);
+                });
+
+                // Officer Command Sword
+                const hilt = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), SHARED_MATS.brass);
+                hilt.position.set(0, -0.18, 0.16);
+                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.58, 0.045), SHARED_MATS.steel);
+                blade.position.set(0, 0.12, 0.24);
+                blade.rotation.x = Math.PI / 7;
+                rightArmPivot.add(hilt, blade);
+
+                // Flintlock Pistol / Telescope in Left Hand
+                const pistol = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.24, 8), SHARED_MATS.brass);
+                pistol.rotation.x = Math.PI / 2;
+                pistol.position.set(0, -0.16, 0.18);
+                leftArmPivot.add(pistol);
+            } else if (type === 'k') {
+                // KING: Bonnie Prince Charlie (e1) vs Duke of Cumberland (e8)
+                const commander = buildSoldierFigure(1.22, true);
+                addHeadgear(commander, 'royal', 3);
+                bodyGroup.add(commander);
+
+                // Golden Royal Epaulettes
+                [-0.20, 0.20].forEach(ex => {
+                    const ep = new THREE.Mesh(new THREE.SphereGeometry(0.062, 10, 10), SHARED_MATS.brass);
+                    ep.position.set(ex, 0.96, 0);
+                    bodyGroup.add(ep);
+                });
+
+                // Gleaming Silver Star of the Order of the Thistle on Bonnie Prince Charlie's breast
+                const starMat = isCeltic ? SHARED_MATS.silverStar : SHARED_MATS.brass;
+                const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.068, 0), starMat);
+                star.position.set(0.075, 0.88, 0.18);
+                bodyGroup.add(star);
+
+                // Royal Silver-Hilted Broadsword / Field Marshal Sword
+                const hilt = new THREE.Mesh(new THREE.SphereGeometry(0.058, 10, 10), SHARED_MATS.brass);
+                hilt.position.set(0, -0.18, 0.16);
+                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.66, 0.052), SHARED_MATS.steel);
+                blade.position.set(0, 0.15, 0.24);
+                blade.rotation.x = Math.PI / 7;
+                rightArmPivot.add(hilt, blade);
+
+                // Towering Royal Standard of Scotland Banner for Bonnie Prince Charlie
+                const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 1.55, 10), SHARED_MATS.brass);
+                pole.position.set(-0.05, 0.44, 0.08);
+                const finial = new THREE.Mesh(new THREE.OctahedronGeometry(0.055, 0), SHARED_MATS.brass);
+                finial.position.set(-0.05, 1.24, 0.08);
+                const flagMat = isCeltic ? SHARED_MATS.celticRoyalBanner : SHARED_MATS.redCoatTorso;
+                const banner = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.38, 0.52), flagMat);
+                banner.position.set(-0.05, 0.98, -0.18);
+                leftArmPivot.add(pole, finial, banner);
+            }
+
+            // Store references for procedural animations, Clan Chief lore & 3D labels
+            root.userData = {
+                type,
+                color,
+                clanProfile,
+                bodyGroup,
+                rightArmPivot,
+                leftArmPivot,
+                phaseOffset: Math.random() * Math.PI * 2,
+                baseY: 0
+            };
+
+            return root;
+        }
+
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x14181f, 0.032);
+
+        const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // Minimalist Atmospheric Lighting (Scottish Moor Daylight + Warm Rim)
+        const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.68);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.15);
+        sunLight.position.set(7, 13, 8);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.camera.near = 1;
+        sunLight.shadow.camera.far = 30;
+        const d = 6.2;
+        sunLight.shadow.camera.left = -d;
+        sunLight.shadow.camera.right = d;
+        sunLight.shadow.camera.top = d;
+        sunLight.shadow.camera.bottom = -d;
+        sunLight.shadow.bias = -0.0005;
+        scene.add(sunLight);
+
+        const rimLight = new THREE.DirectionalLight(0x60a5fa, 0.45);
+        rimLight.position.set(-8, 6, -9);
+        scene.add(rimLight);
+
+        // Board & Coordinate Helpers (a1..h8 -> Three.js X,Z in [-3.5..3.5])
+        const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        function squareToWorld(sq) {
+            const fileIdx = FILES.indexOf(sq[0]);
+            const rankIdx = parseInt(sq[1], 10) - 1;
+            return new THREE.Vector3(fileIdx - 3.5, 0, 3.5 - rankIdx);
+        }
+
+        // Build 64-Square Minimalist Culloden Table & Board
+        const boardGroup = new THREE.Group();
+        scene.add(boardGroup);
+
+        const squareMeshes = {}; // sq -> Mesh
+        const highlightMeshes = {}; // sq -> Highlight Ring/Tile
+
+        // Outer Dark Slate Frame
+        const boardFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(8.9, 0.34, 8.9),
+            new THREE.MeshStandardMaterial({ color: 0x1e242d, roughness: 0.55, metalness: 0.15 })
+        );
+        boardFrame.position.y = -0.18;
+        boardFrame.receiveShadow = true;
+        boardGroup.add(boardFrame);
+
+        // Brass Inlay Border
+        const brassTrim = new THREE.Mesh(
+            new THREE.BoxGeometry(8.22, 0.36, 8.22),
+            new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.7, roughness: 0.3 })
+        );
+        brassTrim.position.y = -0.18;
+        boardGroup.add(brassTrim);
+
+        const lightSqMat = new THREE.MeshStandardMaterial({ color: 0xd6d3d1, roughness: 0.55 });
+        const darkSqMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.65 });
+        const sqGeo = new THREE.BoxGeometry(0.98, 0.08, 0.98);
+
+        for (let r = 0; r < 8; r++) {
+            for (let f = 0; f < 8; f++) {
+                const sqName = `${FILES[f]}${r + 1}`;
+                const isLight = (f + r) % 2 === 1;
+                const sqMesh = new THREE.Mesh(sqGeo, isLight ? lightSqMat.clone() : darkSqMat.clone());
+                const pos = squareToWorld(sqName);
+                sqMesh.position.set(pos.x, -0.04, pos.z);
+                sqMesh.receiveShadow = true;
+                sqMesh.userData = { square: sqName, isLight };
+                boardGroup.add(sqMesh);
+                squareMeshes[sqName] = sqMesh;
+
+                // Interactive Highlight Ring Overlay
+                const hlGeo = new THREE.RingGeometry(0.24, 0.38, 24);
+                const hlMat = new THREE.MeshBasicMaterial({
+                    color: 0x10b981,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.0
+                });
+                const hlMesh = new THREE.Mesh(hlGeo, hlMat);
+                hlMesh.rotation.x = -Math.PI / 2;
+                hlMesh.position.set(pos.x, 0.012, pos.z);
+                boardGroup.add(hlMesh);
+                highlightMeshes[sqName] = hlMesh;
+            }
+        }
+
+        const pieceMeshes = {}; // sq -> Group
+        const activeAnimations = []; // Move & Attack animations
+        const shatterFragments = []; // Active physics fragments for captured pieces
+
+        /**
+         * Triggers a 3D physics shatter explosion on a captured soldier piece
+         */
+        function triggerShatterEffect(pieceGroup) {
+            if (!pieceGroup) return;
+            soundFX.playShatter();
+            const origin = pieceGroup.position.clone();
+            const isCeltic = pieceGroup.userData.color === 'w';
+            const fragMats = isCeltic
+                ? [SHARED_MATS.celticPlaid, SHARED_MATS.celticBonnet, SHARED_MATS.brass, SHARED_MATS.steel]
+                : [SHARED_MATS.redCoatPlain, SHARED_MATS.whiteBreeches, SHARED_MATS.brass, SHARED_MATS.tricornBlack];
+
+            // Spawn 26 angular shard fragments bursting outward with gravity and floor bounce
+            const shardGeo = new THREE.DodecahedronGeometry(0.085, 0);
+            for (let i = 0; i < 26; i++) {
+                const mat = fragMats[i % fragMats.length].clone();
+                mat.transparent = true;
+                mat.opacity = 1.0;
+                const shard = new THREE.Mesh(shardGeo, mat);
+                shard.scale.set(
+                    0.6 + Math.random() * 0.9,
+                    0.5 + Math.random() * 1.1,
+                    0.6 + Math.random() * 0.9
+                );
+                shard.position.set(
+                    origin.x + (Math.random() - 0.5) * 0.35,
+                    0.2 + Math.random() * 0.85,
+                    origin.z + (Math.random() - 0.5) * 0.35
+                );
+                shard.castShadow = true;
+                scene.add(shard);
+
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1.4 + Math.random() * 2.8;
+                shatterFragments.push({
+                    mesh: shard,
+                    vel: new THREE.Vector3(
+                        Math.cos(angle) * speed,
+                        2.2 + Math.random() * 2.6,
+                        Math.sin(angle) * speed
+                    ),
+                    rotVel: new THREE.Vector3(
+                        (Math.random() - 0.5) * 12,
+                        (Math.random() - 0.5) * 12,
+                        (Math.random() - 0.5) * 12
+                    ),
+                    age: 0,
+                    maxAge: 1.55 + Math.random() * 0.45
+                });
+            }
+
+            scene.remove(pieceGroup);
+        }
+
+        /**
+         * Animates a piece marching or charging to a target square, with optional attack strike & shatter
+         */
+        function animateChessMove(fromSq, toSq, capturedPieceGroup, onComplete) {
+            const mover = pieceMeshes[fromSq];
+            if (!mover) {
+                if (onComplete) onComplete();
+                return;
+            }
+
+            const startPos = mover.position.clone();
+            const endPos = squareToWorld(toSq);
+            const isCapture = Boolean(capturedPieceGroup);
+
+            // Rotate soldier to face direction of march
+            const dir = new THREE.Vector3().subVectors(endPos, startPos);
+            if (dir.lengthSq() > 0.001) {
+                const targetAngle = Math.atan2(dir.x, dir.z);
+                mover.userData.bodyGroup.rotation.y = targetAngle;
+            }
+
+            activeAnimations.push({
+                mover,
+                startPos,
+                endPos,
+                capturedPieceGroup,
+                isCapture,
+                shatterTriggered: false,
+                elapsed: 0,
+                duration: isCapture ? 0.72 : 0.46,
+                onComplete: () => {
+                    // Restore standard army facing direction after move completes
+                    mover.userData.bodyGroup.rotation.y = mover.userData.color === 'w' ? Math.PI : 0;
+                    mover.userData.rightArmPivot.rotation.x = 0;
+                    mover.position.copy(endPos);
+                    soundFX.playMarchStep();
+                    if (onComplete) onComplete();
+                }
+            });
+        }
+
+        const chess = new Chess();
+        let selectedSquare = null;
+        let legalMovesForSelected = [];
+        let gameMode = 'ai'; // 'ai' (Player White vs AI Black) or '2p'
+        let isAnimating = false;
+        let pendingPromotionMove = null;
+        let lastMoveSquares = [];
+        let showClanBadges = true; // Shows floating 3D badges for Bonnie Prince Charlie + 1-8 Regiments
+
+        // Piece evaluation weights for AI commander
+        const PIECE_VALUES = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
+        const PIECE_SYMBOLS = {
+            w: { p: '🛡️', r: '🏰', n: '🐎', b: '🪓', q: '⚔️', k: '👑' },
+            b: { p: '💂', r: '💣', n: '🏇', b: '🎖️', q: '🗡️', k: '👑' }
+        };
+
+        // Map current square -> clanProfile so each of the 1-8 Clan Chiefs retains their regiment identity as they march
+        let activeClanChiefMap = {};
+        const badgeElements = {}; // key -> DOM element in #labels-overlay
+
+        function resetClanChiefLocations() {
+            activeClanChiefMap = {};
+            Object.keys(JACOBITE_CLAN_CHIEFS).forEach(sq => {
+                activeClanChiefMap[sq] = {
+                    ...JACOBITE_CLAN_CHIEFS[sq],
+                    originSquare: sq
+                };
+            });
+        }
+        resetClanChiefLocations();
+
+        function rebuildFloatingBadgesDOM() {
+            const overlay = document.getElementById('labels-overlay');
+            overlay.innerHTML = '';
+            Object.keys(badgeElements).forEach(k => delete badgeElements[k]);
+
+            Object.keys(pieceMeshes).forEach(sq => {
+                const mesh = pieceMeshes[sq];
+                if (!mesh || mesh.userData.color !== 'w') return;
+
+                const isPrince = mesh.userData.type === 'k';
+                const clan = mesh.userData.clanProfile;
+                if (!isPrince && !clan) return;
+
+                const el = document.createElement('div');
+                el.className = 'unit-3d-badge';
+
+                if (isPrince) {
+                    el.innerHTML = `
+                        <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/95 via-yellow-400/95 to-amber-500/95 text-slate-950 font-cinzel font-extrabold text-[10px] sm:text-[11px] tracking-wider shadow-[0_4px_14px_rgba(250,204,21,0.55)] border border-white/60 flex items-center gap-1">
+                            <span>👑</span>
+                            <span>BONNIE PRINCE CHARLIE (${sq.toUpperCase()})</span>
+                        </div>
+                    `;
+                } else if (clan) {
+                    const isClanranald = clan.isHighlightedClanranald;
+                    const badgeClasses = isClanranald
+                        ? 'px-2.5 py-1 rounded-lg bg-emerald-900/95 text-amber-200 border border-amber-400/80 shadow-[0_0_12px_rgba(250,204,21,0.45)] font-semibold text-[10px]'
+                        : 'px-2 py-0.5 rounded-md bg-slate-900/88 text-emerald-300 border border-emerald-500/40 shadow-md font-medium text-[9.5px]';
+
+                    el.innerHTML = `
+                        <div class="${badgeClasses} flex items-center gap-1">
+                            <span class="font-mono font-bold text-amber-300">#${clan.orderNum}</span>
+                            <span>${isClanranald ? 'Alan MacDonald of Clanranald' : clan.shortLabel.replace(/^#\d+\s*/, '')}</span>
+                        </div>
+                    `;
+                }
+
+                el.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    handleSquareSelection(sq);
+                });
+
+                overlay.appendChild(el);
+                badgeElements[sq] = el;
+            });
+        }
+
+        function updateFloatingBadgesProjection() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const projVec = new THREE.Vector3();
+
+            Object.keys(badgeElements).forEach(sq => {
+                const el = badgeElements[sq];
+                const mesh = pieceMeshes[sq];
+                if (!el || !mesh) {
+                    if (el) el.style.opacity = '0';
+                    return;
+                }
+
+                const isPrince = mesh.userData.type === 'k';
+                // Always keep Bonnie Prince Charlie visible; toggle the 1-8 Clan badges via button
+                if (!isPrince && !showClanBadges) {
+                    el.style.opacity = '0';
+                    el.style.pointerEvents = 'none';
+                    return;
+                }
+
+                projVec.copy(mesh.position);
+                projVec.y += isPrince ? 1.65 : 1.32;
+                projVec.project(camera);
+
+                if (projVec.z > 1) {
+                    el.style.opacity = '0';
+                    return;
+                }
+
+                const x = (projVec.x * 0.5 + 0.5) * width;
+                const y = (-(projVec.y * 0.5) + 0.5) * height;
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+            });
+        }
+
+        /**
+         * Rebuilds all 32 3D pieces on the board to match current chess.js state
+         */
+        function syncBoardMeshesFromState() {
+            // Reconstruct activeClanChiefMap from move history so Undo works accurately
+            resetClanChiefLocations();
+            const verboseHistory = chess.history({ verbose: true });
+            verboseHistory.forEach(m => {
+                if (m.color === 'w' && activeClanChiefMap[m.from]) {
+                    activeClanChiefMap[m.to] = activeClanChiefMap[m.from];
+                    delete activeClanChiefMap[m.from];
+                } else if (m.color === 'b' && activeClanChiefMap[m.to]) {
+                    delete activeClanChiefMap[m.to];
+                }
+            });
+
+            // Clear existing piece meshes
+            Object.keys(pieceMeshes).forEach(sq => {
+                scene.remove(pieceMeshes[sq]);
+                delete pieceMeshes[sq];
+            });
+
+            const board = chess.board();
+            for (let r = 0; r < 8; r++) {
+                for (let f = 0; f < 8; f++) {
+                    const cell = board[r][f];
+                    if (cell) {
+                        const sq = `${FILES[f]}${8 - r}`;
+                        const clanProfile = (cell.color === 'w' && cell.type === 'p') ? activeClanChiefMap[sq] : null;
+                        const mesh = createSoldierPieceMesh(cell.type, cell.color, clanProfile);
+                        const worldPos = squareToWorld(sq);
+                        mesh.position.copy(worldPos);
+                        mesh.userData.square = sq;
+                        scene.add(mesh);
+                        pieceMeshes[sq] = mesh;
+                    }
+                }
+            }
+            rebuildFloatingBadgesDOM();
+            updateHighlights();
+            updateHUD();
+        }
+
+        /**
+         * Updates 3D board ring highlights for selected square, legal moves, last move, and King in check
+         */
+        function updateHighlights() {
+            Object.keys(highlightMeshes).forEach(sq => {
+                const hl = highlightMeshes[sq];
+                hl.material.opacity = 0.0;
+                hl.scale.setScalar(1.0);
+            });
+
+            // Highlight last move squares in warm amber
+            lastMoveSquares.forEach(sq => {
+                if (highlightMeshes[sq]) {
+                    highlightMeshes[sq].material.color.setHex(0xf59e0b);
+                    highlightMeshes[sq].material.opacity = 0.45;
+                    highlightMeshes[sq].scale.setScalar(0.95);
+                }
+            });
+
+            // Highlight King in Check with crimson alert ring
+            if (chess.in_check()) {
+                const turnColor = chess.turn();
+                Object.keys(pieceMeshes).forEach(sq => {
+                    const p = pieceMeshes[sq];
+                    if (p && p.userData.type === 'k' && p.userData.color === turnColor) {
+                        highlightMeshes[sq].material.color.setHex(0xef4444);
+                        highlightMeshes[sq].material.opacity = 0.92;
+                        highlightMeshes[sq].scale.setScalar(1.18);
+                    }
+                });
+            }
+
+            // Highlight currently selected square
+            if (selectedSquare && highlightMeshes[selectedSquare]) {
+                highlightMeshes[selectedSquare].material.color.setHex(0xfacc15);
+                highlightMeshes[selectedSquare].material.opacity = 0.9;
+            }
+
+            // Highlight valid destination squares
+            legalMovesForSelected.forEach(m => {
+                const hl = highlightMeshes[m.to];
+                if (hl) {
+                    const isCapture = m.flags.includes('c') || m.flags.includes('e');
+                    hl.material.color.setHex(isCapture ? 0xef4444 : 0x10b981);
+                    hl.material.opacity = 0.85;
+                    hl.scale.setScalar(isCapture ? 1.15 : 0.85);
+                }
+            });
+        }
+
+        /**
+         * Updates Unit Inspector Card when a piece is clicked or hovered
+         */
+        function updateInspector(sq) {
+            const piece = chess.get(sq);
+            if (!piece) return;
+
+            const mesh = pieceMeshes[sq];
+            const clanProfile = mesh && mesh.userData ? mesh.userData.clanProfile : null;
+            const info = UNIT_LORE[piece.color][piece.type];
+            const factionBadge = document.getElementById('inspector-faction');
+
+            if (clanProfile) {
+                factionBadge.textContent = `${clanProfile.regiment} • ${clanProfile.clan}`;
+                factionBadge.className = 'text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40';
+                document.getElementById('inspector-square').textContent = `Square ${sq.toUpperCase()}`;
+                document.getElementById('inspector-name').textContent = clanProfile.name;
+                document.getElementById('inspector-desc').textContent = clanProfile.desc;
+                return;
+            }
+
+            factionBadge.textContent = UNIT_LORE[piece.color].faction;
+            if (piece.color === 'w') {
+                factionBadge.className = 'text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+            } else {
+                factionBadge.className = 'text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30';
+            }
+            document.getElementById('inspector-square').textContent = `Square ${sq.toUpperCase()}`;
+            document.getElementById('inspector-name').textContent = info.name;
+            document.getElementById('inspector-desc').textContent = info.desc;
+        }
+
+        /**
+         * Updates Turn Banner, Captured Trays, and Move Chronicle
+         */
+        function updateHUD() {
+            const turn = chess.turn();
+            const turnDot = document.getElementById('turn-dot');
+            const turnTitle = document.getElementById('turn-title');
+            const turnSubtitle = document.getElementById('turn-subtitle');
+            const turnBanner = document.getElementById('turn-banner');
+
+            turnBanner.classList.remove('check-alert');
+
+            if (chess.game_over()) {
+                turnDot.className = 'w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24]';
+                turnTitle.textContent = 'Battle Concluded';
+                turnSubtitle.textContent = chess.in_checkmate() ? 'Checkmate on the Moor!' : 'Stalemate / Draw';
+                showGameOverModal();
+            } else {
+                if (turn === 'w') {
+                    turnDot.className = 'w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]';
+                    turnTitle.textContent = "Jacobite Clans' Turn (White)";
+                    turnSubtitle.textContent = chess.in_check() ? 'WARNING: Bonnie Prince Charlie is under fire!' : 'Select a Highlander to march';
+                } else {
+                    turnDot.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444]';
+                    turnTitle.textContent = "British Red Coats' Turn (Black)";
+                    turnSubtitle.textContent = gameMode === 'ai' ? 'Duke of Cumberland is issuing orders...' : (chess.in_check() ? 'WARNING: Duke of Cumberland is in Check!' : 'Select a Red Coat unit');
+                }
+                if (chess.in_check()) {
+                    turnBanner.classList.add('check-alert');
+                }
+            }
+
+            // Compute captured pieces from move history
+            const history = chess.history({ verbose: true });
+            const capturedByW = [];
+            const capturedByB = [];
+            history.forEach(m => {
+                if (m.captured) {
+                    if (m.color === 'w') capturedByW.push(m.captured);
+                    else capturedByB.push(m.captured);
+                }
+            });
+
+            const capWEl = document.getElementById('captured-by-white');
+            const capBEl = document.getElementById('captured-by-black');
+
+            if (capturedByW.length === 0) {
+                capWEl.innerHTML = '<span class="text-[11px] text-slate-500 italic">No Red Coats shattered yet</span>';
+            } else {
+                capWEl.innerHTML = capturedByW.map(t => `<span title="${UNIT_LORE.b[t].name}">${PIECE_SYMBOLS.b[t]}</span>`).join('');
+            }
+
+            if (capturedByB.length === 0) {
+                capBEl.innerHTML = '<span class="text-[11px] text-slate-500 italic">No Highlanders shattered yet</span>';
+            } else {
+                capBEl.innerHTML = capturedByB.map(t => `<span title="${UNIT_LORE.w[t].name}">${PIECE_SYMBOLS.w[t]}</span>`).join('');
+            }
+
+            document.getElementById('score-white').textContent = capturedByW.length ? `${capturedByW.length} shattered` : '';
+            document.getElementById('score-black').textContent = capturedByB.length ? `${capturedByB.length} shattered` : '';
+
+            // Move History Log
+            const moveLog = document.getElementById('move-history');
+            const moveBadge = document.getElementById('move-count-badge');
+            moveBadge.textContent = `Turn ${Math.floor(history.length / 2) + 1}`;
+
+            if (history.length === 0) {
+                moveLog.innerHTML = '<div class="text-[11px] text-slate-500 italic py-2 text-center">16 April 1746 — The armies stand arrayed across Drumossie Moor.</div>';
+            } else {
+                let rowsHtml = '';
+                for (let i = 0; i < history.length; i += 2) {
+                    const moveNum = Math.floor(i / 2) + 1;
+                    const wMove = history[i];
+                    const bMove = history[i + 1];
+                    rowsHtml += `
+                        <div class="flex items-center justify-between px-2 py-1 rounded bg-slate-900/50 border border-white/5">
+                            <span class="text-slate-500 w-7">${moveNum}.</span>
+                            <span class="text-emerald-300 flex-1">${wMove.san}</span>
+                            <span class="text-red-300 flex-1 text-right">${bMove ? bMove.san : '...'}</span>
+                        </div>
+                    `;
+                }
+                moveLog.innerHTML = rowsHtml;
+                moveLog.scrollTop = moveLog.scrollHeight;
+            }
+
+            document.getElementById('btn-undo').disabled = history.length === 0 || isAnimating;
+        }
+
+        /**
+         * Executes a validated chess move with 3D march, attack swing, and shatter physics
+         */
+        function executeMoveOnBoard(moveObj) {
+            isAnimating = true;
+            selectedSquare = null;
+            legalMovesForSelected = [];
+            updateHighlights();
+
+            const fromSq = moveObj.from;
+            const toSq = moveObj.to;
+
+            // Check if a piece is being captured (including En Passant)
+            let capturedSq = null;
+            if (moveObj.flags.includes('e')) {
+                // En passant capture square
+                const epRank = moveObj.color === 'w' ? parseInt(toSq[1], 10) - 1 : parseInt(toSq[1], 10) + 1;
+                capturedSq = `${toSq[0]}${epRank}`;
+            } else if (moveObj.captured) {
+                capturedSq = toSq;
+            }
+
+            const capturedMesh = capturedSq ? pieceMeshes[capturedSq] : null;
+            if (capturedSq && pieceMeshes[capturedSq]) {
+                delete pieceMeshes[capturedSq];
+            }
+
+            animateChessMove(fromSq, toSq, capturedMesh, () => {
+                // Update activeClanChiefMap if a Jacobite Clan Chief moved or was captured
+                if (moveObj.color === 'w' && activeClanChiefMap[fromSq]) {
+                    activeClanChiefMap[toSq] = activeClanChiefMap[fromSq];
+                    delete activeClanChiefMap[fromSq];
+                } else if (capturedSq && activeClanChiefMap[capturedSq]) {
+                    delete activeClanChiefMap[capturedSq];
+                }
+
+                // Update pieceMeshes dictionary
+                const movedMesh = pieceMeshes[fromSq];
+                const preservedClan = movedMesh && movedMesh.userData ? movedMesh.userData.clanProfile : null;
+                delete pieceMeshes[fromSq];
+
+                // Handle Pawn Promotion mesh upgrade
+                if (moveObj.promotion) {
+                    scene.remove(movedMesh);
+                    const promotedMesh = createSoldierPieceMesh(moveObj.promotion, moveObj.color, preservedClan);
+                    promotedMesh.position.copy(squareToWorld(toSq));
+                    promotedMesh.userData.square = toSq;
+                    scene.add(promotedMesh);
+                    pieceMeshes[toSq] = promotedMesh;
+                } else if (movedMesh) {
+                    movedMesh.userData.square = toSq;
+                    pieceMeshes[toSq] = movedMesh;
+                }
+
+                // Handle Castling Rook movement
+                if (moveObj.flags.includes('k') || moveObj.flags.includes('q')) {
+                    const rank = moveObj.color === 'w' ? '1' : '8';
+                    const rookFrom = moveObj.flags.includes('k') ? `h${rank}` : `a${rank}`;
+                    const rookTo = moveObj.flags.includes('k') ? `f${rank}` : `d${rank}`;
+                    const rookMesh = pieceMeshes[rookFrom];
+                    if (rookMesh) {
+                        delete pieceMeshes[rookFrom];
+                        rookMesh.position.copy(squareToWorld(rookTo));
+                        rookMesh.userData.square = rookTo;
+                        pieceMeshes[rookTo] = rookMesh;
+                    }
+                }
+
+                lastMoveSquares = [fromSq, toSq];
+                isAnimating = false;
+                rebuildFloatingBadgesDOM();
+                updateHighlights();
+                updateHUD();
+
+                // If in vs AI mode and it's Black's turn, schedule AI Commander move
+                if (!chess.game_over() && gameMode === 'ai' && chess.turn() === 'b') {
+                    setTimeout(makeAICommanderMove, 420);
+                } else if (gameMode === '2p' && autoFlipCamera) {
+                    setCameraPreset(chess.turn() === 'w' ? 0 : 1);
+                }
+            });
+        }
+
+        function evaluateBoardState(gameInstance) {
+            const board = gameInstance.board();
+            let score = 0;
+            for (let r = 0; r < 8; r++) {
+                for (let f = 0; f < 8; f++) {
+                    const p = board[r][f];
+                    if (p) {
+                        // Positional bonus for advancing & controlling center of Culloden Moor
+                        const centerBonus = (3.5 - Math.abs(3.5 - f)) * 6 + (3.5 - Math.abs(3.5 - r)) * 6;
+                        const val = PIECE_VALUES[p.type] + centerBonus;
+                        score += p.color === 'b' ? val : -val;
+                    }
+                }
+            }
+            return score;
+        }
+
+        function makeAICommanderMove() {
+            if (chess.game_over() || isAnimating) return;
+            const moves = chess.moves({ verbose: true });
+            if (moves.length === 0) return;
+
+            // Depth-2 Minimax with Alpha-Beta Pruning & Tactical Capture Priority
+            let bestMove = moves[0];
+            let bestScore = -Infinity;
+
+            // Shuffle slightly for variety
+            moves.sort(() => Math.random() - 0.5);
+
+            for (const m of moves) {
+                chess.move(m);
+                let score = -Infinity;
+                if (chess.in_checkmate()) {
+                    score = 99999;
+                } else {
+                    const oppMoves = chess.moves({ verbose: true });
+                    let worstReply = Infinity;
+                    for (const om of oppMoves) {
+                        chess.move(om);
+                        const evalScore = evaluateBoardState(chess);
+                        if (evalScore < worstReply) worstReply = evalScore;
+                        chess.undo();
+                    }
+                    score = worstReply === Infinity ? evaluateBoardState(chess) : worstReply;
+                }
+                chess.undo();
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = m;
+                }
+            }
+
+            const moveResult = chess.move({
+                from: bestMove.from,
+                to: bestMove.to,
+                promotion: bestMove.promotion || 'q'
+            });
+
+            if (moveResult) {
+                updateInspector(moveResult.to);
+                executeMoveOnBoard(moveResult);
+            }
+        }
+
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
+
+        // Spherical Camera Orbit State
+        const cameraState = {
+            theta: 0,
+            phi: 0.92,
+            radius: 10.6,
+            targetTheta: 0,
+            targetPhi: 0.92,
+            targetRadius: 10.6,
+            isDragging: false,
+            dragDistance: 0,
+            prevX: 0,
+            prevY: 0
+        };
+
+        let currentCameraPreset = 0;
+        let autoFlipCamera = false;
+        const CAMERA_PRESETS = [
+            { name: 'Cam: Highlanders', theta: 0, phi: 0.92, radius: 10.6 },
+            { name: 'Cam: Red Coats', theta: Math.PI, phi: 0.92, radius: 10.6 },
+            { name: 'Cam: Tactical Flank', theta: Math.PI / 3, phi: 0.78, radius: 11.4 },
+            { name: 'Cam: Overhead Map', theta: 0, phi: 0.22, radius: 12.2 }
+        ];
+
+        function setCameraPreset(index) {
+            currentCameraPreset = index % CAMERA_PRESETS.length;
+            const preset = CAMERA_PRESETS[currentCameraPreset];
+            cameraState.targetTheta = preset.theta;
+            cameraState.targetPhi = preset.phi;
+            cameraState.targetRadius = preset.radius;
+            document.getElementById('camera-label').textContent = preset.name;
+        }
+
+        function handleSquareSelection(sq) {
+            if (isAnimating || chess.game_over()) return;
+            if (gameMode === 'ai' && chess.turn() === 'b') return;
+
+            // Check if clicked square is a legal destination for currently selected soldier
+            const chosenMove = legalMovesForSelected.find(m => m.to === sq);
+            if (chosenMove) {
+                // Check if Pawn Promotion is required
+                if (chosenMove.flags.includes('p')) {
+                    pendingPromotionMove = { from: selectedSquare, to: sq };
+                    const promoModal = document.getElementById('promotion-modal');
+                    promoModal.classList.remove('hidden');
+                    promoModal.classList.add('flex');
+                    return;
+                }
+
+                const result = chess.move({ from: selectedSquare, to: sq });
+                if (result) {
+                    updateInspector(sq);
+                    executeMoveOnBoard(result);
+                }
+                return;
+            }
+
+            // Otherwise check if user clicked one of their own soldiers
+            const clickedPiece = chess.get(sq);
+            if (clickedPiece) {
+                updateInspector(sq);
+                if (clickedPiece.color === chess.turn()) {
+                    soundFX.playSelect();
+                    selectedSquare = sq;
+                    legalMovesForSelected = chess.moves({ square: sq, verbose: true });
+                    updateHighlights();
+                    return;
+                }
+            }
+
+            // Deselect if clicking empty or opposing piece out of range
+            selectedSquare = null;
+            legalMovesForSelected = [];
+            updateHighlights();
+        }
+
+        // Pointer Down / Move / Up for Orbit & Click Selection
+        renderer.domElement.addEventListener('pointerdown', (e) => {
+            cameraState.isDragging = true;
+            cameraState.dragDistance = 0;
+            cameraState.prevX = e.clientX;
+            cameraState.prevY = e.clientY;
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (!cameraState.isDragging) return;
+            const dx = e.clientX - cameraState.prevX;
+            const dy = e.clientY - cameraState.prevY;
+            cameraState.dragDistance += Math.abs(dx) + Math.abs(dy);
+            cameraState.prevX = e.clientX;
+            cameraState.prevY = e.clientY;
+
+            cameraState.targetTheta -= dx * 0.0065;
+            cameraState.targetPhi = Math.max(0.2, Math.min(1.38, cameraState.targetPhi - dy * 0.0055));
+        });
+
+        window.addEventListener('pointerup', (e) => {
+            if (!cameraState.isDragging) return;
+            cameraState.isDragging = false;
+
+            // Treat as board click if pointer barely dragged
+            if (cameraState.dragDistance < 8) {
+                const rect = renderer.domElement.getBoundingClientRect();
+                pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(pointer, camera);
+
+                // Collect all squares and pieces
+                const targets = [...Object.values(squareMeshes), ...Object.values(pieceMeshes)];
+                const intersects = raycaster.intersectObjects(targets, true);
+
+                if (intersects.length > 0) {
+                    let obj = intersects[0].object;
+                    while (obj && !obj.userData.square) {
+                        obj = obj.parent;
+                    }
+                    if (obj && obj.userData.square) {
+                        handleSquareSelection(obj.userData.square);
+                    }
+                }
+            }
+        });
+
+        renderer.domElement.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            cameraState.targetRadius = Math.max(6.2, Math.min(16.5, cameraState.targetRadius + e.deltaY * 0.005));
+        }, { passive: false });
+
+        // Material Ripple Effect on all .md-btn buttons
+        document.querySelectorAll('.md-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                const rect = this.getBoundingClientRect();
+                const circle = document.createElement('span');
+                const diameter = Math.max(rect.width, rect.height);
+                const radius = diameter / 2;
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${e.clientX - rect.left - radius}px`;
+                circle.style.top = `${e.clientY - rect.top - radius}px`;
+                circle.classList.add('ripple');
+                const existing = this.querySelector('.ripple');
+                if (existing) existing.remove();
+                this.appendChild(circle);
+            });
+        });
+
+        // Mode Toggle (vs AI / 2-Player Pass & Play)
+        document.getElementById('btn-mode').addEventListener('click', () => {
+            gameMode = gameMode === 'ai' ? '2p' : 'ai';
+            document.getElementById('mode-label').textContent = gameMode === 'ai' ? 'vs AI (Commander)' : '2P Pass & Play';
+            updateHUD();
+            if (gameMode === 'ai' && chess.turn() === 'b' && !chess.game_over()) {
+                setTimeout(makeAICommanderMove, 350);
+            }
+        });
+
+        // Spot Bonnie Prince Charlie & 1-8 Front-Line Clan Regiments Toggle Button
+        document.getElementById('btn-clans').addEventListener('click', () => {
+            showClanBadges = !showClanBadges;
+            document.getElementById('clans-label').textContent = showClanBadges
+                ? 'Spot Prince & 1–8 Clans'
+                : 'Show 1–8 Clan Badges';
+
+            // Focus camera on the Jacobite Front Line & inspect Alan MacDonald of Clanranald or Bonnie Prince Charlie
+            setCameraPreset(0);
+            if (chess.get('b2') && chess.get('b2').color === 'w') {
+                updateInspector('b2');
+                selectedSquare = 'b2';
+                legalMovesForSelected = chess.moves({ square: 'b2', verbose: true });
+                updateHighlights();
+            } else if (chess.get('e1')) {
+                updateInspector('e1');
+            }
+        });
+
+        // Camera View Cycle Button
+        document.getElementById('btn-camera').addEventListener('click', () => {
+            setCameraPreset(currentCameraPreset + 1);
+        });
+
+        // Undo Move Button
+        document.getElementById('btn-undo').addEventListener('click', () => {
+            if (isAnimating) return;
+            if (gameMode === 'ai') {
+                chess.undo();
+                chess.undo();
+            } else {
+                chess.undo();
+            }
+            selectedSquare = null;
+            legalMovesForSelected = [];
+            lastMoveSquares = [];
+            syncBoardMeshesFromState();
+        });
+
+        // Sound Toggle Button
+        document.getElementById('btn-sound').addEventListener('click', () => {
+            soundFX.enabled = !soundFX.enabled;
+            document.getElementById('icon-sound-on').classList.toggle('hidden', !soundFX.enabled);
+            document.getElementById('icon-sound-off').classList.toggle('hidden', soundFX.enabled);
+        });
+
+        // Reset / New Battle Function
+        function startNewBattle() {
+            chess.reset();
+            selectedSquare = null;
+            legalMovesForSelected = [];
+            lastMoveSquares = [];
+            isAnimating = false;
+            document.getElementById('gameover-modal').classList.add('hidden');
+            document.getElementById('gameover-modal').classList.remove('flex');
+            syncBoardMeshesFromState();
+            setCameraPreset(0);
+        }
+
+        document.getElementById('btn-reset').addEventListener('click', startNewBattle);
+        document.getElementById('btn-modal-new').addEventListener('click', startNewBattle);
+        document.getElementById('btn-modal-close').addEventListener('click', () => {
+            document.getElementById('gameover-modal').classList.add('hidden');
+            document.getElementById('gameover-modal').classList.remove('flex');
+        });
+
+        // Pawn Promotion Selection Buttons
+        document.querySelectorAll('#promotion-options button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const promoPiece = btn.getAttribute('data-piece');
+                const promoModal = document.getElementById('promotion-modal');
+                promoModal.classList.add('hidden');
+                promoModal.classList.remove('flex');
+
+                if (pendingPromotionMove) {
+                    const result = chess.move({
+                        from: pendingPromotionMove.from,
+                        to: pendingPromotionMove.to,
+                        promotion: promoPiece
+                    });
+                    pendingPromotionMove = null;
+                    if (result) {
+                        updateInspector(result.to);
+                        executeMoveOnBoard(result);
+                    }
+                }
+            });
+        });
+
+        function showGameOverModal() {
+            const modal = document.getElementById('gameover-modal');
+            const badge = document.getElementById('gameover-badge');
+            const title = document.getElementById('gameover-title');
+            const desc = document.getElementById('gameover-desc');
+
+            if (chess.in_checkmate()) {
+                const winner = chess.turn() === 'w' ? 'British Red Coats' : 'Jacobite Highlanders';
+                badge.textContent = 'Checkmate on Culloden Moor';
+                title.textContent = `${winner} Triumph!`;
+                desc.textContent = chess.turn() === 'w'
+                    ? 'The Duke of Cumberland’s disciplined musket and artillery line has carried the field.'
+                    : 'Bonnie Prince Charlie’s Highland charge has broken the Red Coat formation and rewritten history!';
+            } else {
+                badge.textContent = 'Ceasefire Declared';
+                title.textContent = 'Battle Drawn';
+                desc.textContent = 'Neither army could break the opposing line before nightfall descended over Drumossie Moor.';
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Responsive Viewport Resize Handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const clock = new THREE.Clock();
+
+        function animateLoop() {
+            requestAnimationFrame(animateLoop);
+
+            const dt = Math.min(clock.getDelta(), 0.1);
+            const elapsedTime = clock.getElapsedTime();
+
+            // 1. Smoothly interpolate camera spherical coordinates
+            cameraState.theta += (cameraState.targetTheta - cameraState.theta) * 0.1;
+            cameraState.phi += (cameraState.targetPhi - cameraState.phi) * 0.1;
+            cameraState.radius += (cameraState.targetRadius - cameraState.radius) * 0.1;
+
+            camera.position.x = cameraState.radius * Math.sin(cameraState.phi) * Math.sin(cameraState.theta);
+            camera.position.y = cameraState.radius * Math.cos(cameraState.phi);
+            camera.position.z = cameraState.radius * Math.sin(cameraState.phi) * Math.cos(cameraState.theta);
+            camera.lookAt(0, 0.35, 0);
+
+            // 2. Procedural Idle Animation for all standing soldiers (breathing, swaying, weapon readiness)
+            Object.values(pieceMeshes).forEach(piece => {
+                const phase = piece.userData.phaseOffset;
+                const breath = Math.sin(elapsedTime * 2.4 + phase);
+                const sway = Math.cos(elapsedTime * 1.6 + phase);
+
+                // Subtle vertical breathing & stance sway
+                piece.userData.bodyGroup.position.y = Math.max(0, breath * 0.015);
+                piece.userData.bodyGroup.rotation.z = sway * 0.022;
+
+                // Subtle weapon readiness oscillation when not mid-attack
+                if (!isAnimating) {
+                    piece.userData.rightArmPivot.rotation.x = breath * 0.08;
+                }
+            });
+
+            // 3. Process Active Move & Combat Attack Animations
+            for (let i = activeAnimations.length - 1; i >= 0; i--) {
+                const anim = activeAnimations[i];
+                anim.elapsed += dt;
+                const t = Math.min(1, anim.elapsed / anim.duration);
+
+                if (!anim.isCapture) {
+                    // Smooth marching glide with step bobbing
+                    const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                    anim.mover.position.lerpVectors(anim.startPos, anim.endPos, ease);
+                    anim.mover.position.y = Math.abs(Math.sin(t * Math.PI * 3)) * 0.16;
+                } else {
+                    // Combat Charge + Weapon Windup & Strike + Target Shatter
+                    if (t < 0.65) {
+                        // Charge up to just in front of defender while raising weapon
+                        const chargeT = t / 0.65;
+                        const stopShort = new THREE.Vector3().lerpVectors(anim.startPos, anim.endPos, 0.82);
+                        anim.mover.position.lerpVectors(anim.startPos, stopShort, chargeT);
+                        anim.mover.position.y = Math.abs(Math.sin(chargeT * Math.PI * 2)) * 0.18;
+                        // Raise broadsword / musket bayonet overhead
+                        anim.mover.userData.rightArmPivot.rotation.x = -chargeT * 1.45;
+                    } else {
+                        // Fierce downward lunge strike into target square
+                        const strikeT = (t - 0.65) / 0.35;
+                        const stopShort = new THREE.Vector3().lerpVectors(anim.startPos, anim.endPos, 0.82);
+                        anim.mover.position.lerpVectors(stopShort, anim.endPos, strikeT);
+                        anim.mover.position.y = 0;
+                        anim.mover.userData.rightArmPivot.rotation.x = -1.45 + strikeT * 2.25;
+
+                        if (!anim.shatterTriggered) {
+                            anim.shatterTriggered = true;
+                            soundFX.playAttackStrike(anim.mover.userData.color === 'b');
+                            triggerShatterEffect(anim.capturedPieceGroup);
+                        }
+                    }
+                }
+
+                if (t >= 1) {
+                    anim.onComplete();
+                    activeAnimations.splice(i, 1);
+                }
+            }
+
+            // 4. Update Physics Shatter Fragments (Gravity, Floor Bounce, Rotation, Fade Out)
+            for (let i = shatterFragments.length - 1; i >= 0; i--) {
+                const frag = shatterFragments[i];
+                frag.age += dt;
+                if (frag.age >= frag.maxAge) {
+                    scene.remove(frag.mesh);
+                    frag.mesh.material.dispose();
+                    shatterFragments.splice(i, 1);
+                    continue;
+                }
+
+                // Gravity acceleration
+                frag.vel.y -= 9.8 * dt;
+                frag.mesh.position.addScaledVector(frag.vel, dt);
+
+                // Floor bounce on the chessboard surface
+                if (frag.mesh.position.y < 0.05) {
+                    frag.mesh.position.y = 0.05;
+                    frag.vel.y = Math.abs(frag.vel.y) * 0.42;
+                    frag.vel.x *= 0.72;
+                    frag.vel.z *= 0.72;
+                }
+
+                frag.mesh.rotation.x += frag.rotVel.x * dt;
+                frag.mesh.rotation.y += frag.rotVel.y * dt;
+                frag.mesh.rotation.z += frag.rotVel.z * dt;
+
+                // Smooth fade out in final 40% of lifetime
+                const lifeRatio = frag.age / frag.maxAge;
+                if (lifeRatio > 0.6) {
+                    frag.mesh.material.opacity = 1 - (lifeRatio - 0.6) / 0.4;
+                }
+            }
+
+            // 5. Project 3D Floating Badges for Bonnie Prince Charlie (e1) & the 1-8 Clan Regiment Chiefs
+            updateFloatingBadgesProjection();
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function () {
+            syncBoardMeshesFromState();
+            updateInspector('b2'); // Default inspector highlights #2 Clanranald's Regt. (Alan MacDonald of Clanranald)
+            animateLoop();
+        };
+    </script>
+
+</body></html>
