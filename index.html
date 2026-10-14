@@ -1,161 +1,97 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Culloden 1746: Celtic vs Red Coats 3D Chess</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com/">
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS is baked into the <style> block below (saved snapshot) + patch for JS-set classes. No Tailwind script needed. -->
-    <!-- Vendored locally so the game works even if a CDN is down/blocked. three.min.js = Three.js 0.147 (last global THREE build); chess.min.js = chess.js 0.10.3 (old in_check()/game_over() API this game uses). -->
-    <script src="js/three.min.js"></script>
-    <script src="js/chess.min.js"></script>
-
-    <style>
-        :root {
-            --md-surface: rgba(24, 28, 34, 0.86);
-            --md-surface-elevated: rgba(34, 40, 49, 0.92);
-            --md-border: rgba(255, 255, 255, 0.1);
-            --celtic-accent: #2b7a4b;
-            --celtic-light: #52b788;
-            --redcoat-accent: #b91c1c;
-            --redcoat-light: #f87171;
-        }
-
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(circle at 50% 35%, #2b323c 0%, #14181f 70%, #0b0e12 100%);
-            color: #f1f5f9;
-        }
-
-        .font-cinzel {
-            font-family: 'Cinzel', serif;
-        }
-
-        #canvas-container {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        #labels-overlay {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .unit-3d-badge {
-            position: absolute;
-            transform: translate(-50%, -100%);
-            white-space: nowrap;
-            pointer-events: auto;
-            cursor: pointer;
-            transition: opacity 0.2s ease, transform 0.15s ease;
-        }
-
-        .unit-3d-badge:hover {
-            transform: translate(-50%, -106%) scale(1.06);
-            z-index: 30;
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            outline: none;
-        }
-
-        /* Material Design Elevated Card */
-        .md-card {
-            background: var(--md-surface);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--md-border);
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.35);
-            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Material Ripple Button */
-        .md-btn {
-            position: relative;
-            overflow: hidden;
-            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s ease, box-shadow 0.2s ease;
-        }
-
-        .md-btn:active {
-            transform: scale(0.97);
-        }
-
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple-anim 550ms linear;
-            background-color: rgba(255, 255, 255, 0.28);
-            pointer-events: none;
-        }
-
-        @keyframes ripple-anim {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.3);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.35);
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(148, 163, 184, 0.6);
-        }
-
-        /* Pulse animation for check/turn */
-        @keyframes pulse-border {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65); }
-            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
-        }
-        .check-alert {
-            animation: pulse-border 1.5s infinite;
-        }
-
-        /* Floating 3D Unit Nameplates */
-        .unit-tag {
-            position: absolute;
-            transform: translate(-50%, -100%);
-            pointer-events: none;
-            white-space: nowrap;
-            transition: opacity 0.2s ease;
-            z-index: 10;
-        }
-    </style>
+<html lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Culloden 1746 to Louisbourg 1758 &amp; Quebec 1759 — 3D Historical Chess</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Vendored locally so the game works even if a CDN is down/blocked. three.min.js = Three.js 0.147 (last global THREE build); chess.min.js = chess.js 0.10.3 (old in_check()/game_over() API this game uses). -->
+<script src="js/three.min.js"></script>
+<script src="js/chess.min.js"></script>
+<style>
+    :root {
+        --md-surface: rgba(24, 28, 34, 0.86);
+        --md-surface-elevated: rgba(34, 40, 49, 0.92);
+        --md-border: rgba(255, 255, 255, 0.1);
+    }
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body, html {
+        margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: radial-gradient(circle at 50% 35%, #2b323c 0%, #14181f 70%, #0b0e12 100%);
+        color: #f1f5f9;
+    }
+    .serif-title { font-family: 'Cinzel', serif; }
+    .font-cinzel { font-family: 'Cinzel', serif; }
+    #canvas-container { position: fixed; inset: 0; z-index: 1; }
+    #canvas-container canvas { display: block; width: 100%; height: 100%; outline: none; }
+    .hud-layer { position: fixed; inset: 0; z-index: 10; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 0.75rem; }
+    @media (min-width: 768px) { .hud-layer { padding: 1.25rem; } }
+    .hud-interactive { pointer-events: auto; }
+    .md-card {
+        background: var(--md-surface);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--md-border); border-radius: 1rem;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.35);
+    }
+    .md-btn { position: relative; overflow: hidden; transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s ease, box-shadow 0.2s ease; }
+    .md-btn:active { transform: scale(0.97); }
+    .ripple { position: absolute; border-radius: 50%; transform: scale(0); animation: ripple-anim 550ms linear; background-color: rgba(255, 255, 255, 0.28); pointer-events: none; }
+    @keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.3); }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.6); }
+    /* Floating 3D Nameplates */
+    #labels-container { position: fixed; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+    .piece-label {
+        position: absolute; transform: translate(-50%, -100%); white-space: nowrap;
+        pointer-events: auto; cursor: pointer; transition: opacity 0.2s ease, transform 0.15s ease;
+        font-size: 10px; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 0.5rem;
+        display: flex; align-items: center; gap: 0.25rem;
+    }
+    .piece-label:hover { transform: translate(-50%, -108%) scale(1.08); z-index: 25; }
+    .piece-label.prince { background: linear-gradient(to right, #92400e, #facc15, #92400e); border: 1px solid #fde047; color: #fef9c3; font-size: 11px; font-weight: 800; }
+    .piece-label.clanranald { background: linear-gradient(to right, #14532d, #7f1d1d); border: 1px solid #fbbf24; color: #fef08a; font-size: 10.5px; font-weight: 700; }
+    .piece-label.clan { background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8; color: #e0f2fe; }
+    .piece-label.wolfe { background: linear-gradient(to right, #7f1d1d, #451a03); border: 1px solid #fde047; color: #fef9c3; font-size: 10.5px; font-weight: 700; }
+    .piece-label.redcoat { background: rgba(76, 5, 25, 0.92); border: 1px solid #ef4444; color: #fee2e2; }
+    .campaign-pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; border: 1px solid; }
+    .campaign-culloden { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
+    .campaign-louisbourg { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.4); }
+    .campaign-quebec { background: rgba(251, 191, 36, 0.15); color: #fde68a; border-color: rgba(251, 191, 36, 0.4); }
+    .move-row { display: flex; align-items: center; justify-content: space-between; padding: 0.25rem 0.5rem; border-radius: 0.375rem; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); }
+</style>
+<!-- Mobile / phone layout: compact header, collapsible bottom-sheet panels, no page scroll/zoom while playing -->
+<style id="mobile-patch">
+    html, body { overscroll-behavior: none; }
+    body { -webkit-touch-callout: none; }
+    #canvas-container, #canvas-container canvas { touch-action: none; }
+    header button, nav button, .md-btn { touch-action: manipulation; }
+    #mobile-info-toggle { display: none; }
+    @media (max-width: 820px), (max-height: 500px) {
+        .hud-layer { padding: 0.5rem; }
+        .hud-layer > header { padding: 0.45rem 0.6rem; gap: 0.35rem; border-radius: 0.9rem; }
+        .brand-subtitle { display: none; }
+        #turn-banner { padding: 0.3rem 0.6rem; gap: 0.4rem; }
+        #turn-text { font-size: 0.68rem; }
+        header nav { gap: 0.35rem; }
+        header nav .md-btn, header nav button { padding: 0.5rem 0.6rem; font-size: 0.68rem; min-height: 2.5rem; }
+        /* Bottom row becomes a bottom sheet, hidden until the Info button opens it */
+        #bottom-hud { position: fixed; left: 0.5rem; right: 0.5rem; bottom: max(0.5rem, env(safe-area-inset-bottom)); width: auto; flex-direction: column; align-items: stretch; transform: translateY(calc(100% + 1rem)); transition: transform 0.28s ease, visibility 0s linear 0.28s; visibility: hidden; pointer-events: none; }
+        body.mobile-panels-open #bottom-hud { transform: none; visibility: visible; transition: transform 0.28s ease; pointer-events: auto; }
+        #bottom-hud .chronicle-card { display: none; }
+        .piece-label { transform: translate(-50%, -100%) scale(0.8); font-size: 8.5px !important; padding: 0.2rem 0.4rem !important; }
+        #mobile-info-toggle { display: flex; position: fixed; right: 0.6rem; bottom: max(0.6rem, env(safe-area-inset-bottom)); z-index: 30; align-items: center; gap: 0.3rem; padding: 0.55rem 0.8rem; border-radius: 999px; background: rgba(15, 23, 42, 0.88); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.4); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; }
+        #mobile-info-toggle:active { background: rgba(30, 41, 59, 0.95); }
+        #promo-modal > div, #gameover-modal > div { width: min(94vw, 26rem); max-height: 92vh; overflow-y: auto; }
+        #promo-modal button, #gameover-modal button { min-height: 2.75rem; }
+    }
+</style>
 <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.pointer-events-auto{pointer-events:auto}.fixed{position:fixed}.relative{position:relative}.inset-0{inset:0px}.bottom-3{bottom:0.75rem}.left-3{left:0.75rem}.right-3{right:0.75rem}.top-3{top:0.75rem}.z-20{z-index:20}.z-40{z-index:40}.mb-1\.5{margin-bottom:0.375rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-5{margin-bottom:1.25rem}.mb-6{margin-bottom:1.5rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-2\.5{margin-top:0.625rem}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-2{height:0.5rem}.h-3{height:0.75rem}.h-4{height:1rem}.h-6{height:1.5rem}.h-9{height:2.25rem}.h-full{height:100%}.max-h-60{max-height:15rem}.min-h-\[26px\]{min-height:26px}.w-10{width:2.5rem}.w-2{width:0.5rem}.w-3{width:0.75rem}.w-4{width:1rem}.w-6{width:1.5rem}.w-64{width:16rem}.w-72{width:18rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-md{border-radius:0.375rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-amber-400\/20{border-color:rgb(251 191 36 / 0.2)}.border-amber-400\/30{border-color:rgb(251 191 36 / 0.3)}.border-amber-400\/35{border-color:rgb(251 191 36 / 0.35)}.border-emerald-500\/30{border-color:rgb(16 185 129 / 0.3)}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-white\/15{border-color:rgb(255 255 255 / 0.15)}.border-white\/5{border-color:rgb(255 255 255 / 0.05)}.border-amber-400\/40{border-color:rgb(251 191 36 / 0.4)}.border-amber-400\/80{border-color:rgb(251 191 36 / 0.8)}.border-emerald-500\/40{border-color:rgb(16 185 129 / 0.4)}.border-white\/60{border-color:rgb(255 255 255 / 0.6)}.bg-amber-500\/15{background-color:rgb(245 158 11 / 0.15)}.bg-amber-500\/20{background-color:rgb(245 158 11 / 0.2)}.bg-black\/70{background-color:rgb(0 0 0 / 0.7)}.bg-black\/75{background-color:rgb(0 0 0 / 0.75)}.bg-emerald-400{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/20{background-color:rgb(16 185 129 / 0.2)}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.bg-emerald-900\/95{background-color:rgb(6 78 59 / 0.95)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-emerald-600{--tw-gradient-from:#059669 var(--tw-gradient-from-position);--tw-gradient-to:rgb(5 150 105 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-emerald-700{--tw-gradient-from:#047857 var(--tw-gradient-from-position);--tw-gradient-to:rgb(4 120 87 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-amber-500\/95{--tw-gradient-from:rgb(245 158 11 / 0.95) var(--tw-gradient-from-position);--tw-gradient-to:rgb(245 158 11 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-slate-800{--tw-gradient-to:rgb(30 41 59 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #1e293b var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-yellow-400\/95{--tw-gradient-to:rgb(250 204 21 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), rgb(250 204 21 / 0.95) var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-red-800{--tw-gradient-to:#991b1b var(--tw-gradient-to-position)}.to-teal-700{--tw-gradient-to:#0f766e var(--tw-gradient-to-position)}.to-amber-500\/95{--tw-gradient-to:rgb(245 158 11 / 0.95) var(--tw-gradient-to-position)}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-7{padding:1.75rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.pb-2{padding-bottom:0.5rem}.pr-1{padding-right:0.25rem}.text-left{text-align:left}.text-center{text-align:center}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[9\.5px\]{font-size:9.5px}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-extrabold{font-weight:800}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254 / var(--tw-text-opacity, 1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113 / var(--tw-text-opacity, 1))}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252 / var(--tw-text-opacity, 1))}.text-sky-400{--tw-text-opacity:1;color:rgb(56 189 248 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_10px_\#34d399\]{--tw-shadow:0 0 10px #34d399;--tw-shadow-colored:0 0 10px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_12px_rgba\(250\2c 204\2c 21\2c 0\.45\)\]{--tw-shadow:0 0 12px rgba(250,204,21,0.45);--tw-shadow-colored:0 0 12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_4px_14px_rgba\(250\2c 204\2c 21\2c 0\.55\)\]{--tw-shadow:0 4px 14px rgba(250,204,21,0.55);--tw-shadow-colored:0 4px 14px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:bg-amber-500\/30:hover{background-color:rgb(245 158 11 / 0.3)}.hover\:bg-emerald-900\/60:hover{background-color:rgb(6 78 59 / 0.6)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700\/90:hover{background-color:rgb(51 65 85 / 0.9)}.hover\:from-emerald-500:hover{--tw-gradient-from:#10b981 var(--tw-gradient-from-position);--tw-gradient-to:rgb(16 185 129 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-teal-600:hover{--tw-gradient-to:#0d9488 var(--tw-gradient-to-position)}.disabled\:opacity-40:disabled{opacity:0.4}@media (min-width: 640px){.sm\:block{display:block}.sm\:inline{display:inline}.sm\:w-80{width:20rem}.sm\:gap-2{gap:0.5rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-\[11px\]{font-size:11px}}@media (min-width: 768px){.md\:inline-block{display:inline-block}.md\:flex{display:flex}}</style>
-    <!-- Patch: Tailwind classes only set by JS at runtime (not in the baked snapshot) -->
+<!-- Patch: Tailwind classes only set by JS at runtime (not in the baked snapshot) -->
     <style>
         .bg-amber-400{background-color:rgb(251 191 36)}
         .bg-red-500\/20{background-color:rgb(239 68 68 / 0.2)}
@@ -171,222 +107,112 @@
         .shadow-\[0_0_12px_rgba\(250\,204\,21\,0\.45\)\]{box-shadow:0 0 12px rgba(250,204,21,0.45)}
         .shadow-\[0_4px_14px_rgba\(250\,204\,21\,0\.55\)\]{box-shadow:0 4px 14px rgba(250,204,21,0.55)}
     </style>
-
-    <!-- Mobile / phone layout: compact header, collapsible bottom-sheet panels, no page scroll/zoom while playing -->
-    <style id="mobile-patch">
-        html, body { overscroll-behavior: none; }
-        body { -webkit-touch-callout: none; }
-        #canvas-container, #canvas-container canvas { touch-action: none; }
-        header button, nav button, .md-btn { touch-action: manipulation; }
-        #mobile-info-toggle { display: none; }
-        @media (max-width: 820px), (max-height: 500px) {
-            header.fixed { top: max(.5rem, env(safe-area-inset-top)); left: .5rem; right: .5rem; padding: .45rem .6rem; gap: .35rem; border-radius: .9rem; }
-            .brand-subtitle, #turn-subtitle { display: none; }
-            #turn-banner { padding: .3rem .6rem; gap: .4rem; }
-            #turn-title { font-size: .68rem; }
-            header nav { gap: .35rem; }
-            header nav .md-btn, header nav button { padding: .5rem .6rem; font-size: .68rem; min-height: 2.5rem; }
-            /* Left panels become a bottom sheet, hidden until the Info button opens them */
-            #left-panels { left: .5rem; right: .5rem; bottom: max(.5rem, env(safe-area-inset-bottom)); width: auto; transform: translateY(calc(100% + 1rem)); transition: transform .28s ease, visibility 0s linear .28s; visibility: hidden; pointer-events: none; }
-            body.mobile-panels-open #left-panels { transform: none; visibility: visible; transition: transform .28s ease; pointer-events: auto; }
-            #right-panels { display: none !important; }
-            .unit-3d-badge { transform: translate(-50%, -100%) scale(.8); }
-            .unit-3d-badge > div { font-size: 8.5px !important; padding: .2rem .4rem !important; }
-            #mobile-info-toggle { display: flex; position: fixed; right: .6rem; bottom: max(.6rem, env(safe-area-inset-bottom)); z-index: 30; align-items: center; gap: .3rem; padding: .55rem .8rem; border-radius: 999px; background: rgba(15, 23, 42, .88); color: #fcd34d; border: 1px solid rgba(251, 191, 36, .4); font-size: .72rem; font-weight: 700; letter-spacing: .04em; cursor: pointer; }
-            #mobile-info-toggle:active { background: rgba(30, 41, 59, .95); }
-            #promotion-modal > div, #gameover-modal > div { width: min(94vw, 26rem); max-height: 92vh; overflow-y: auto; }
-            #promotion-modal button, #gameover-modal button { min-height: 2.75rem; }
-        }
-    </style>
+<style>
+/* Baked fallback for new-HUD utilities not present in the game-1 snapshot */
+.border-t{border-top-width:1px}
+.hover\:text-sky-200:hover{color:rgb(125 211 252)}
+.items-end{align-items:flex-end}
+@media (min-width: 768px){.md\:p-5{padding:1.25rem}}
+.mt-1\.5{margin-top:0.375rem}
+.pt-2{padding-top:0.5rem}
+.shadow-\[0_0_10px_\#ef4444\]{box-shadow:0 0 10px #ef4444}
+.shadow-\[0_0_10px_\#fbbf24\]{box-shadow:0 0 10px #fbbf24}
+.text-amber-300\/90{color:rgb(252 211 77 / 0.9)}
+.underline{text-decoration-line:underline}
+.underline-offset-2{text-underline-offset:2px}
+.w-7{width:1.75rem}
+</style>
 </head>
 <body class="relative w-full h-full overflow-hidden">
-
-    <!-- 3D Viewport Container -->
-    <div id="canvas-container"><!-- Three.js appends its live canvas here on load. --></div>
-
-    <!-- 3D Floating Labels Overlay for Bonnie Prince Charlie & 1-8 Front-Line Clan Regiments -->
-    <div id="labels-overlay">
-        </div>
-
-    <!-- Single-Level Material Top App Bar -->
-    <header class="fixed top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 md-card rounded-2xl px-4 py-2.5">
-        <!-- Brand & Historical Subtitle -->
+<div id="canvas-container"><!-- Three.js appends its live canvas here on load. --></div>
+<div id="labels-container"></div>
+<div class="hud-layer flex flex-col justify-between p-3 md:p-5">
+    <header class="md-card hud-interactive flex flex-wrap items-center justify-between gap-2 rounded-2xl px-4 py-2.5">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-700 via-slate-800 to-red-800 flex items-center justify-center border border-white/15 shadow-inner">
-                <svg class="w-6 h-6 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M9.5 6.5L21 18v3h-3L6.5 9.5M11 5L5 11M8 8L4 4M5 3L3 5"></path>
-                </svg>
+                <svg class="w-6 h-6 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M9.5 6.5L21 18v3h-3L6.5 9.5M11 5L5 11M8 8L4 4M5 3L3 5"></path></svg>
             </div>
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="font-cinzel font-bold text-base sm:text-lg tracking-wider text-white leading-none">CULLODEN 1746</h1>
-                    <span class="hidden md:inline-block text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/20">3D Historical Chess</span>
+                    <h1 class="serif-title font-bold text-base sm:text-lg tracking-wider text-white leading-none">CULLODEN 1746 &rarr; LOUISBOURG 1758 &rarr; QUEBEC 1759</h1>
+                    <span class="hidden md:inline-block text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/20">Wikipedia &amp; Campaign Edition</span>
                 </div>
-                <p class="brand-subtitle text-[11px] text-slate-400 hidden sm:block mt-0.5">Jacobite Highlanders (White) vs British Red Coats (Black)</p>
+                <p class="brand-subtitle text-[11px] text-slate-400 hidden sm:block mt-0.5">1&ndash;8 Jacobite Regts (<span class="font-mono">a2</span>&ndash;<span class="font-mono">h2</span>) vs. 1&ndash;8 Hanoverian Regts (<span class="font-mono">a7</span>&ndash;<span class="font-mono">h7</span>) &bull; Click any soldier for Campaign Service &amp; Wikipedia</p>
             </div>
         </div>
-
-        <!-- Turn & Battle Status Indicator Pill -->
         <div id="turn-banner" class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-white/10">
             <span id="turn-dot" class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]"></span>
-            <div class="text-left">
-                <div id="turn-title" class="text-xs font-bold tracking-wide text-white uppercase">Jacobite Clans' Turn (White)</div>
-                <div id="turn-subtitle" class="text-[10px] text-slate-400">Select a Highlander to march</div>
-            </div>
+            <div class="text-left"><div id="turn-text" class="text-xs font-bold tracking-wide text-white uppercase">Jacobite Highlanders to March</div></div>
         </div>
-
-        <!-- Single-Level Action Controls -->
         <nav class="flex items-center flex-wrap gap-1.5 sm:gap-2">
-            <!-- Spot Prince & 1-8 Regiments Badge Toggle -->
-            <button id="btn-clans" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-xs font-semibold text-amber-300 border border-amber-400/35 shadow-sm" title="Highlight Bonnie Prince Charlie &amp; the 1-8 Front-Line Clan Regiments">
-                <svg class="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                </svg>
-                <span id="clans-label">Spot Prince &amp; 1–8 Clans</span>
-            </button>
-
-            <!-- Game Mode Toggle -->
-            <button id="btn-mode" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Switch Game Mode">
-                <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                </svg>
-                <span id="mode-label">vs AI (Commander)</span>
-            </button>
-
-            <!-- Camera Preset Toggle -->
-            <button id="btn-camera" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Cycle Camera Angle">
-                <svg class="w-4 h-4 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                </svg>
-                <span id="camera-label">Cam: Highlanders</span>
-            </button>
-
-            <!-- Undo Move -->
-            <button id="btn-undo" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10 disabled:opacity-40" title="Undo Last Move" disabled="">
-                <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
-                </svg>
-                <span class="hidden sm:inline">Undo</span>
-            </button>
-
-            <!-- Sound Effects Toggle -->
-            <button id="btn-sound" class="md-btn flex items-center justify-center w-9 h-9 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Toggle Battle Audio">
-                <svg id="icon-sound-on" class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                </svg>
-                <svg id="icon-sound-off" class="w-4 h-4 text-slate-400 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
-                </svg>
-            </button>
-
-            <!-- New Battle Button -->
-            <button id="btn-reset" class="md-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-xs font-semibold text-white shadow-md">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
-                <span>New Battle</span>
-            </button>
+            <button id="btn-clans" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-xs font-semibold text-amber-300 border border-amber-400/35 shadow-sm" title="Cycle floating regiment badges"><span id="clans-label">Badges: All Regts</span></button>
+            <button id="btn-louisbourg" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Highlight Louisbourg &amp; Quebec veterans">&#9875; Louisbourg &amp; Quebec Vets</button>
+            <button id="btn-mode" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Switch Game Mode"><span id="mode-label">Mode: vs AI Commander</span></button>
+            <button id="btn-cam" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Cycle Camera Angle"><span id="cam-label">Cam: Highlanders</span></button>
+            <button id="btn-sound" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10" title="Toggle Battle Audio"><span id="sound-label">&#128266; SFX</span></button>
+            <button id="btn-undo" class="md-btn flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-xs font-medium text-slate-100 border border-white/10 disabled:opacity-40" title="Undo Last Move" disabled>&#8617; Undo</button>
+            <button id="btn-reset" class="md-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-xs font-semibold text-white shadow-md" title="Start a New Battle">&#10227; New Battle</button>
         </nav>
     </header>
-
-    <!-- Left HUD: Army Casualties & Selected Soldier Inspector -->
-    <aside id="left-panels" class="fixed bottom-3 left-3 z-20 flex flex-col gap-2.5 w-72 sm:w-80 pointer-events-none">
-        <!-- Selected Piece Historical Inspector Card -->
-        <div id="unit-inspector" class="md-card rounded-2xl p-3.5 pointer-events-auto transition-opacity duration-200">
-            <div class="flex items-center justify-between mb-1.5">
-                <span id="inspector-faction" class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">2 - Clanranald's Regt. • Clan MacDonald of Clanranald</span>
-                <span id="inspector-square" class="text-xs font-mono text-amber-300">Square B2</span>
+    <div id="bottom-hud" class="hud-interactive flex items-end justify-between gap-3">
+        <div class="flex flex-col gap-2.5 w-72 sm:w-80">
+            <div id="unit-inspector" class="md-card rounded-2xl p-3.5">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span id="unit-coord" class="text-xs font-mono text-amber-300">h7</span>
+                    <span id="unit-badge" class="text-sm">&#11088;</span>
+                </div>
+                <h2 id="unit-name" class="serif-title font-bold text-sm text-white">8 - Wolfe&apos;s 8th Regt. of Foot (h7)</h2>
+                <p id="unit-role" class="text-[11px] text-amber-300/90 mt-0.5">Maj. James Wolfe (Brig.-Gen. at Louisbourg &amp; Maj.-Gen. at Quebec)</p>
+                <div id="unit-campaigns" class="flex flex-wrap gap-1 mt-1.5"><span class="campaign-pill campaign-culloden">Culloden 1746</span><span class="campaign-pill campaign-louisbourg">Louisbourg 1758</span><span class="campaign-pill campaign-quebec">Quebec 1759</span></div>
+                <p id="unit-desc" class="text-[11px] text-slate-300 mt-1.5 leading-relaxed">Served as Brigade-Major at Culloden and refused Cumberland&apos;s order to shoot wounded Jacobite Col. Charles Fraser (h2). Twelve years later, Wolfe led the amphibious landing at Kennington Cove at the 1758 Siege of Louisbourg in Cape Breton, and commanded the British army on the Plains of Abraham at Quebec in 1759!</p>
+                <div class="flex items-center justify-between mt-2 gap-2">
+                    <a id="unit-wiki-btn" href="https://en.wikipedia.org/wiki/James_Wolfe" target="_blank" rel="noopener" class="md-btn text-[11px] font-semibold text-sky-300 hover:text-sky-200 underline underline-offset-2"><span id="unit-wiki-label">Wikipedia: James Wolfe</span> &#8599;</a>
+                    <span id="unit-service-summary" class="text-[10px] font-bold uppercase tracking-wider text-amber-300">Louisbourg &amp; Quebec Vet</span>
+                </div>
             </div>
-            <h2 id="inspector-name" class="font-cinzel font-bold text-sm text-white">Alan MacDonald of Clanranald</h2>
-            <p id="inspector-desc" class="text-[11px] text-slate-300 mt-1 leading-relaxed">2 - Clanranald's Regt. (Square B2): Represented by the celebrated Clanranald chieftain Alan MacDonald of Clanranald. Wearing the historic Clanranald crimson, forest green, navy &amp; white-line sett with 3 golden eagle feathers and gilded targe.</p>
+            <div class="md-card rounded-2xl p-3">
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300 mb-1.5"><span>Fallen Redcoats</span><span id="score-black" class="text-red-400 font-mono text-xs"></span></div>
+                <div id="cap-black" class="min-h-[26px] flex flex-wrap items-center gap-1 text-sm bg-slate-900/60 rounded-lg px-2 py-1 border border-white/5"><span class="text-[11px] text-slate-500 italic">No Redcoats shattered yet</span></div>
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300 mt-2.5 mb-1.5"><span>Fallen Highlanders</span><span id="score-white" class="text-emerald-400 font-mono text-xs"></span></div>
+                <div id="cap-white" class="min-h-[26px] flex flex-wrap items-center gap-1 text-sm bg-slate-900/60 rounded-lg px-2 py-1 border border-white/5"><span class="text-[11px] text-slate-500 italic">No Highlanders shattered yet</span></div>
+            </div>
         </div>
-
-        <!-- Casualties / Captured Units Tray -->
-        <div class="md-card rounded-2xl p-3 pointer-events-auto">
-            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300 mb-1.5">
-                <span class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    Jacobite Captures
-                </span>
-                <span id="score-white" class="text-emerald-400 font-mono text-xs"></span>
-            </div>
-            <div id="captured-by-white" class="min-h-[26px] flex flex-wrap items-center gap-1 text-sm bg-slate-900/60 rounded-lg px-2 py-1 border border-white/5"><span class="text-[11px] text-slate-500 italic">No Red Coats shattered yet</span></div>
-
-            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300 mt-2.5 mb-1.5">
-                <span class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                    Red Coat Captures
-                </span>
-                <span id="score-black" class="text-red-400 font-mono text-xs"></span>
-            </div>
-            <div id="captured-by-black" class="min-h-[26px] flex flex-wrap items-center gap-1 text-sm bg-slate-900/60 rounded-lg px-2 py-1 border border-white/5"><span class="text-[11px] text-slate-500 italic">No Highlanders shattered yet</span></div>
+        <div id="combat-toast" class="hidden md-card rounded-2xl px-4 py-2.5 text-center max-w-md">
+            <span id="combat-toast-text" class="text-sm font-semibold text-amber-300"></span>
         </div>
-    </aside>
-
-    <!-- Right HUD: Battle Chronicle (Move History) & Controls Legend -->
-    <aside id="right-panels" class="fixed bottom-3 right-3 z-20 hidden md:flex flex-col gap-2.5 w-64 pointer-events-none">
-        <div class="md-card rounded-2xl p-3.5 pointer-events-auto flex flex-col max-h-60">
-            <div class="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
-                <span class="font-cinzel text-xs font-bold tracking-wider text-amber-300 uppercase">Battle Chronicle</span>
-                <span id="move-count-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Turn 1</span>
+        <div class="chronicle-card md-card rounded-2xl p-3.5 hidden md:flex flex-col gap-2 w-64 max-h-60">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <span class="serif-title text-xs font-bold tracking-wider text-amber-300 uppercase">Battle Chronicle</span>
+                <span id="move-count" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Turn 1</span>
             </div>
-            <div id="move-history" class="overflow-y-auto space-y-1 pr-1 text-xs font-mono text-slate-300 flex-1"><div class="text-[11px] text-slate-500 italic py-2 text-center">16 April 1746 — The armies stand arrayed across Drumossie Moor.</div></div>
-        </div>
-
-        <div class="md-card rounded-xl px-3 py-2 pointer-events-auto text-[11px] text-slate-400 flex items-center justify-between">
-            <span><strong class="text-slate-200">Orbit:</strong> Drag Mouse/Touch</span>
-            <span><strong class="text-slate-200">Zoom:</strong> Scroll</span>
-        </div>
-    </aside>
-
-    <!-- Pawn Battlefield Promotion Modal -->
-    <div id="promotion-modal" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="md-card rounded-3xl p-6 max-w-md w-full border border-amber-400/30 text-center">
-            <h3 class="font-cinzel text-xl font-bold text-amber-300">Battlefield Commission</h3>
-            <p class="text-xs text-slate-300 mt-1 mb-5">Your soldier has crossed the enemy lines! Choose a rank for promotion:</p>
-            <div class="grid grid-cols-2 gap-3" id="promotion-options">
-                <button data-piece="q" class="md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1">
-                    <span class="text-lg font-cinzel font-bold text-amber-300">Queen / General</span>
-                    <span class="text-[11px] text-slate-400">Lord George Murray / Gen. Hawley</span>
-                </button>
-                <button data-piece="r" class="md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1">
-                    <span class="text-lg font-cinzel font-bold text-sky-300">Rook / Heavy</span>
-                    <span class="text-[11px] text-slate-400">War Piper / Royal Artillery</span>
-                </button>
-                <button data-piece="b" class="md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1">
-                    <span class="text-lg font-cinzel font-bold text-purple-300">Bishop / Guard</span>
-                    <span class="text-[11px] text-slate-400">Lochaber Axeman / Grenadier</span>
-                </button>
-                <button data-piece="n" class="md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1">
-                    <span class="text-lg font-cinzel font-bold text-emerald-300">Knight / Cavalry</span>
-                    <span class="text-[11px] text-slate-400">FitzJames Horse / Cobham Dragoon</span>
-                </button>
-            </div>
+            <div id="move-log" class="overflow-y-auto space-y-1 pr-1 text-xs font-mono text-slate-300 flex-1"><div class="text-[11px] text-slate-500 italic py-2 text-center">16 April 1746 &mdash; The armies stand arrayed across Drumossie Moor.</div></div>
+            <div class="text-[10px] text-slate-500 border-t border-white/10 pt-2">Left-Drag: Orbit / Scroll: Zoom / Click Piece/Badge</div>
         </div>
     </div>
-
-    <!-- End-of-Battle Modal -->
-    <div id="gameover-modal" class="fixed inset-0 z-40 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4">
-        <div class="md-card rounded-3xl p-7 max-w-md w-full border border-white/15 text-center shadow-2xl">
-            <div id="gameover-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-amber-500/20 text-amber-300 border border-amber-400/30 mb-3">
-                Decisive Victory
-            </div>
-            <h2 id="gameover-title" class="font-cinzel text-2xl sm:text-3xl font-bold text-white">Victory on Culloden Moor</h2>
-            <p id="gameover-desc" class="text-sm text-slate-300 mt-2 mb-6 leading-relaxed">
-                The opposing commander has been surrounded and their line shattered.
-            </p>
-            <div class="flex items-center justify-center gap-3">
-                <button id="btn-modal-new" class="md-btn px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-sm font-semibold text-white shadow-lg">
-                    Fight Another Battle
-                </button>
-                <button id="btn-modal-close" class="md-btn px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-medium text-slate-200 border border-white/10">
-                    Inspect Board
-                </button>
-            </div>
+</div>
+<div id="promo-modal" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="md-card rounded-3xl p-6 max-w-md w-full border border-amber-400/30 text-center">
+        <h3 class="serif-title text-xl font-bold text-amber-300">Field Commission</h3>
+        <p class="text-xs text-slate-300 mt-1 mb-5">Your soldier has crossed the enemy lines! Choose a rank for promotion:</p>
+        <div class="grid grid-cols-2 gap-3">
+            <button data-promo="q" class="promo-btn md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1"><span class="text-lg serif-title font-bold text-amber-300">&#9876; Field Marshal (Queen)</span></button>
+            <button data-promo="r" class="promo-btn md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1"><span class="text-lg serif-title font-bold text-sky-300">&#127984; Artillery / Piper (Rook)</span></button>
+            <button data-promo="b" class="promo-btn md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1"><span class="text-lg serif-title font-bold text-purple-300">&#129712; Lochaber / Grenadier (Bishop)</span></button>
+            <button data-promo="n" class="promo-btn md-btn p-3 rounded-2xl bg-slate-800/90 hover:bg-emerald-900/60 border border-white/10 flex flex-col items-center gap-1"><span class="text-lg serif-title font-bold text-emerald-300">&#128014; Dragoon Cavalry (Knight)</span></button>
         </div>
     </div>
-
+</div>
+<div id="gameover-modal" class="fixed inset-0 z-40 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="md-card rounded-3xl p-7 max-w-md w-full border border-white/15 text-center shadow-2xl">
+        <div id="gameover-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-amber-500/20 text-amber-300 border border-amber-400/30 mb-3">Decisive Victory</div>
+        <h2 id="gameover-title" class="serif-title text-2xl sm:text-3xl font-bold text-white">Victory on Culloden Moor</h2>
+        <p id="gameover-desc" class="text-sm text-slate-300 mt-2 mb-6 leading-relaxed">The opposing commander has been surrounded and their line shattered.</p>
+        <div class="flex items-center justify-center gap-3">
+            <button id="btn-modal-new" class="md-btn px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-sm font-semibold text-white shadow-lg">Fight Another Battle</button>
+            <button id="btn-modal-close" class="md-btn px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-medium text-slate-200 border border-white/10">Inspect Board</button>
+        </div>
+    </div>
+</div>
     <script>
         /**
          * PROCEDURAL BATTLE AUDIO ENGINE (Web Audio API - No External Assets Required)
@@ -524,144 +350,412 @@
          * 7 - Lady Mackintosh's Regt. (g2)
          * 8 - Lovat's Regt. (h2)
          */
-        const JACOBITE_CLAN_CHIEFS = {
+const JACOBITE_CLAN_CHIEFS = {
             a2: {
                 orderNum: 1,
                 regiment: "1 - Glengarry's Regt.",
+                chief: 'Donald MacDonell of Lochgarry',
                 clan: 'Clan MacDonell of Glengarry',
                 name: 'Donald MacDonell of Lochgarry',
-                shortLabel: "#1 Glengarry • Lochgarry",
+                shortLabel: "1 - Glengarry's Regt.",
+                badgeText: "1 - Glengarry's Regt.",
+                louisbourg1758: true, quebec1759: true,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Clan_MacDonell_of_Glengarry',
+                wikiLabel: 'Clan MacDonell of Glengarry',
+                tartan: { base: '#143321', s1: '#991b1b', s2: '#0a0f18', fine: '#f8fafc' },
+                tartanColors: ['#143321', '#991b1b', '#0a0f18', '#f8fafc'],
                 feathers: 3,
-                tartanColors: ['#7f1d1d', '#064e3b', '#111827', '#f8fafc'],
-                desc: "1 - Glengarry's Regt. (Square A2): Commanded by Donald MacDonell of Lochgarry on the far left of the Jacobite line. Clad in Glengarry bark-red, dark green & black tartan with three eagle feathers."
+                desc: "1st Regiment on the far right of the Jacobite front line (500 men). In 1758 & 1759, Lochgarry\'s son Capt. John MacDonell led Glengarry veterans in the 78th Fraser Highlanders at Both the Siege of Louisbourg (Cape Breton) and the Plains of Abraham (Quebec)!"
             },
             b2: {
                 orderNum: 2,
                 regiment: "2 - Clanranald's Regt.",
+                chief: 'Alan MacDonald of Clanranald',
                 clan: 'Clan MacDonald of Clanranald',
                 name: 'Alan MacDonald of Clanranald',
-                shortLabel: "#2 Clanranald • Alan MacDonald",
+                shortLabel: "2 - Clanranald's Regt. (Alan MacDonald)",
+                badgeText: "2 - Clanranald's Regt. (Alan MacDonald)",
+                louisbourg1758: true, quebec1759: true,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Clan_Macdonald_of_Clanranald',
+                wikiLabel: 'Clan Macdonald of Clanranald',
+                tartan: { base: '#0f3d26', s1: '#dc2626', s2: '#172554', fine: '#ffffff' },
+                tartanColors: ['#0f3d26', '#dc2626', '#172554', '#ffffff'],
                 feathers: 3,
+                isClanranald: true,
                 isHighlightedClanranald: true,
-                tartanColors: ['#991b1b', '#14532d', '#1e3a8a', '#f8fafc'],
-                desc: "2 - Clanranald's Regt. (Square B2): Represented by the celebrated Clanranald chieftain Alan MacDonald of Clanranald. Wearing the historic Clanranald crimson, forest green, navy & white-line sett with 3 golden eagle feathers and gilded targe."
+                desc: "Commanded by Alan MacDonald of Clanranald on the Jacobite right wing. Twelve years later, Capt. Ranald MacDonald of Clanranald and scores of Clanranald clansmen stormed Kennington Cove at Louisbourg (1758) and fought at Quebec (1759) in the 78th Highlanders."
             },
             c2: {
                 orderNum: 3,
                 regiment: "3 - Keppoch's Regt.",
+                chief: 'Alexander MacDonald of Keppoch',
                 clan: 'Clan MacDonald of Keppoch',
                 name: 'Alexander MacDonald of Keppoch',
-                shortLabel: "#3 Keppoch • Alex. MacDonald",
+                shortLabel: "3 - Keppoch's Regt.",
+                badgeText: "3 - Keppoch's Regt.",
+                louisbourg1758: true, quebec1759: true,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Alexander_MacDonald,_17th_of_Keppoch',
+                wikiLabel: 'Alexander MacDonald of Keppoch',
+                tartan: { base: '#7f1d1d', s1: '#14532d', s2: '#1e3a8a', fine: '#cbd5e1' },
+                tartanColors: ['#7f1d1d', '#14532d', '#1e3a8a', '#cbd5e1'],
                 feathers: 3,
-                tartanColors: ['#b91c1c', '#14532d', '#1e40af', '#fbbf24'],
-                desc: "3 - Keppoch's Regt. (Square C2): Led by Chief Alexander MacDonald of Keppoch, who famously charged heroic and pistol-in-hand with broadsword drawn. Wearing Keppoch crimson & pine-green tartan."
+                desc: "Chief Alexander MacDonald of Keppoch heroically charged into British canister fire at Culloden. His nephew, Capt. Donald MacDonald of Keppoch, served in the 78th Fraser Highlanders at the Siege of Louisbourg (1758) and fought at the Siege of Quebec (1759)."
             },
             d2: {
                 orderNum: 4,
                 regiment: "4 - Chisholm's Regt.",
-                clan: 'Clan Chisholm',
+                chief: 'Roderick Chisholm of Comar',
+                clan: 'Clan Chisholm of Strathglass',
                 name: 'Roderick Chisholm of Comar',
-                shortLabel: "#4 Chisholm • Roderick of Comar",
+                shortLabel: "4 - Chisholm's Regt.",
+                badgeText: "4 - Chisholm's Regt.",
+                louisbourg1758: true, quebec1759: true,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Clan_Chisholm',
+                wikiLabel: 'Clan Chisholm',
+                tartan: { base: '#b91c1c', s1: '#166534', s2: '#1e3a8a', fine: '#f8fafc' },
+                tartanColors: ['#b91c1c', '#166534', '#1e3a8a', '#f8fafc'],
                 feathers: 3,
-                tartanColors: ['#dc2626', '#15803d', '#1e3a8a', '#ffffff'],
-                desc: "4 - Chisholm's Regt. (Square D2): Led by Roderick Chisholm of Comar, youngest son of the Chief of Clan Chisholm, alongside their famous piper Kenneth MacKay. Clad in Chisholm scarlet, fern green & white tartan."
+                desc: "Led at Culloden by Roderick Og Chisholm, youngest son of the Chief of Clan Chisholm. In 1758–1759, Ensign John Chisholm and Strathglass clansmen fought in the 78th Highlanders at both Louisbourg in Cape Breton and the Plains of Abraham at Quebec."
             },
             e2: {
                 orderNum: 5,
-                regiment: "5 - Macleans & Maclachlans",
-                clan: 'Clans MacLean & MacLachlan',
-                name: 'Charles MacLean of Drimnin & Col. MacLachlan',
-                shortLabel: "#5 Macleans & Maclachlans",
+                regiment: '5 - Macleans & Maclachlans',
+                chief: 'Charles MacLean of Drimnin & Col. Lachlan MacLachlan',
+                clan: 'Combined Clans MacLean & MacLachlan',
+                name: 'Charles MacLean of Drimnin & Col. Lachlan MacLachlan',
+                shortLabel: '5 - Macleans & Maclachlans',
+                badgeText: '5 - Macleans & Maclachlans',
+                louisbourg1758: true, quebec1759: true,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Clan_Maclean',
+                wikiLabel: 'Clan Maclean & MacLachlan',
+                tartan: { base: '#9f1239', s1: '#115e59', s2: '#1e293b', fine: '#fde047' },
+                tartanColors: ['#9f1239', '#115e59', '#1e293b', '#fde047'],
                 feathers: 3,
-                tartanColors: ['#be123c', '#166534', '#172554', '#facc15'],
-                desc: "5 - Macleans & Maclachlans (Square E2): Combined Highland regiment commanded by Charles MacLean of Drimnin and Col. Lachlan MacLachlan of MacLachlan, who led a fierce charge into the teeth of Barrel's Regiment."
+                desc: "Combined regiment of MacLeans and MacLachlans that charged Barrel\'s (`a7`) and Munro\'s (`b7`) Redcoats at Culloden. Surviving MacLean officers and clansmen served in the Highland regiments at both Louisbourg (1758) and Quebec (1759)."
             },
             f2: {
                 orderNum: 6,
                 regiment: "6 - Monaltrie's Regt.",
-                clan: 'Clan Farquharson',
+                chief: 'Francis Farquharson of Monaltrie',
+                clan: 'Clan Farquharson ("Baron Ban")',
                 name: 'Francis Farquharson of Monaltrie',
-                shortLabel: "#6 Monaltrie • Farquharson",
+                shortLabel: "6 - Monaltrie's Regt.",
+                badgeText: "6 - Monaltrie's Regt.",
+                louisbourg1758: false, quebec1759: false,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Clan_Farquharson',
+                wikiLabel: 'Clan Farquharson',
+                tartan: { base: '#14532d', s1: '#1e3a8a', s2: '#991b1b', fine: '#facc15' },
+                tartanColors: ['#14532d', '#1e3a8a', '#991b1b', '#facc15'],
                 feathers: 2,
-                tartanColors: ['#14532d', '#1e3a8a', '#dc2626', '#facc15'],
-                desc: "6 - Monaltrie's Regt. (Square F2): Commanded by Francis Farquharson of Monaltrie ('The Baron Ban'), leading the Aberdeenshire Farquharsons in dark forest green, navy, red & yellow-stripe tartan."
+                desc: 'Commanded by Francis Farquharson of Monaltrie ("The Baron Ban"), leading the Aberdeenshire Farquharson battalion at the center-right of the Jacobite front line at Culloden before being captured and later pardoned in England.'
             },
             g2: {
                 orderNum: 7,
                 regiment: "7 - Lady Mackintosh's Regt.",
+                chief: 'Col. Alexander MacGillivray of Dunmaglass',
                 clan: 'Clan Chattan Confederation',
                 name: 'Col. Alexander MacGillivray of Dunmaglass',
-                shortLabel: "#7 Lady Mackintosh • MacGillivray",
+                shortLabel: "7 - Lady Mackintosh's Regt.",
+                badgeText: "7 - Lady Mackintosh's Regt.",
+                louisbourg1758: true, quebec1759: true,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Anne_Farquharson-MacKintosh',
+                wikiLabel: 'Lady Anne Mackintosh',
+                tartan: { base: '#991b1b', s1: '#14532d', s2: '#1d4ed8', fine: '#fde047' },
+                tartanColors: ['#991b1b', '#14532d', '#1d4ed8', '#fde047'],
                 feathers: 3,
-                tartanColors: ['#dc2626', '#166534', '#1d4ed8', '#fde047'],
-                desc: "7 - Lady Mackintosh's Regt. (Square G2): Raised by 'Colonel Anne' (Lady Anne Farquharson-Mackintosh) and led in the charge by Colonel Alexander MacGillivray of Dunmaglass at the center-right."
+                desc: 'Raised by 22-year-old Lady Anne Farquharson-Mackintosh ("Colonel Anne") and led at Culloden by Col. Alexander MacGillivray. Surviving Mackintosh and MacGillivray clansmen later served in the 78th Highlanders at Louisbourg (1758) and Quebec (1759).'
             },
             h2: {
                 orderNum: 8,
                 regiment: "8 - Lovat's Regt.",
-                clan: 'Clan Fraser of Lovat',
-                name: 'Charles Fraser of Inverallochie',
-                shortLabel: "#8 Lovat's Regt. • Inverallochie",
+                chief: 'Charles Fraser of Inverallochie & Simon Fraser',
+                clan: 'Clan Fraser of Lovat (78th Fraser Highlanders)',
+                name: 'Charles Fraser of Inverallochie & Simon Fraser',
+                shortLabel: "8 - Lovat's Regt. (Frasers)",
+                badgeText: "8 - Lovat's Regt. (Frasers)",
+                louisbourg1758: true, quebec1759: true,
+                wikiUrl: 'https://en.wikipedia.org/wiki/78th_Fraser_Highlanders',
+                wikiLabel: '78th Fraser Highlanders',
+                tartan: { base: '#b91c1c', s1: '#15803d', s2: '#1e3a8a', fine: '#ffffff' },
+                tartanColors: ['#b91c1c', '#15803d', '#1e3a8a', '#ffffff'],
                 feathers: 2,
-                tartanColors: ['#ef4444', '#15803d', '#1e3a8a', '#f8fafc'],
-                desc: "8 - Lovat's Regt. (Square H2): Commanded on the field by Lt.-Col. Charles Fraser of Inverallochie on the Jacobite right wing. Dressed in bright Fraser red, green & white tartan."
+                desc: "Led at Culloden by Charles Fraser of Inverallochie (whom Maj. James Wolfe `h7` refused to execute). In 1757, Chief Simon Fraser raised the 78th Fraser Highlanders from these exact survivors—storming Louisbourg (1758) and scaling the cliffs at Quebec (1759) under Wolfe!"
             }
+
         };
+
+        const HANOVERIAN_REGIMENTS = {
+            a7: {
+                orderNum: 1,
+                regiment: "1 - Barrell's 4th Regt. of Foot",
+                chief: 'Lt.-Col. Robert Rich ("The King\'s Own")',
+                clan: 'Hanoverian Left Flank • Royal Blue Facings',
+                name: 'Lt.-Col. Robert Rich ("The King\'s Own")',
+                shortLabel: "1 - Barrell's 4th Foot",
+                badgeText: "1 - Barrell's 4th Foot",
+                facingColor: 0x1e3a8a,
+                louisbourg1758: false, quebec1759: false,
+                wikiUrl: 'https://en.wikipedia.org/wiki/King%27s_Own_Royal_Regiment_(Lancaster)',
+                wikiLabel: "Barrell's 4th Regiment of Foot",
+                tartan: { base: '#7f1d1d', s1: '#f8fafc', s2: '#1e293b', fine: '#facc15' },
+                tartanColors: ['#7f1d1d', '#f8fafc', '#1e293b', '#facc15'],
+                feathers: 0,
+                desc: "Anchored the extreme left flank of the British front line at Culloden. Took the full, ferocious impact of the Highland charge from Mackintosh's (`g2`), Lovat's (`h2`), and Maclean's (`e2`) clansmen in brutal hand-to-hand combat."
+            },
+            b7: {
+                orderNum: 2,
+                regiment: "2 - Munro's 37th Regt. of Foot",
+                chief: 'Col. Harry Munro & Lt.-Col. Biggar',
+                clan: 'Hanoverian Left-Center • Bright Yellow Facings',
+                name: 'Col. Harry Munro & Lt.-Col. Biggar',
+                shortLabel: "2 - Munro's 37th Foot",
+                badgeText: "2 - Munro's 37th Foot",
+                facingColor: 0xeab308,
+                louisbourg1758: false, quebec1759: false,
+                wikiUrl: 'https://en.wikipedia.org/wiki/37th_(North_Hampshire)_Regiment_of_Foot',
+                wikiLabel: "Munro's 37th Regiment of Foot",
+                tartan: { base: '#7f1d1d', s1: '#f8fafc', s2: '#1e293b', fine: '#facc15' },
+                tartanColors: ['#7f1d1d', '#f8fafc', '#1e293b', '#facc15'],
+                feathers: 0,
+                desc: "Stood immediately right of Barrell's 4th Regiment (`a7`) at Culloden. Engaged in desperate close-quarters fighting where Highland broadswords and targes clashed directly against Cumberland's new diagonal bayonet thrusting drill."
+            },
+            c7: {
+                orderNum: 3,
+                regiment: "3 - Campbell's 21st Royal N.B. Fusiliers",
+                chief: 'Col. Sir Andrew Agnew of Lochnaw',
+                clan: 'Royal North British Fusiliers • Dark Blue Facings',
+                name: 'Col. Sir Andrew Agnew of Lochnaw',
+                shortLabel: "3 - 21st Scots Fusiliers",
+                badgeText: "3 - 21st Scots Fusiliers",
+                facingColor: 0x172554,
+                louisbourg1758: false, quebec1759: false,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Royal_Scots_Fusiliers',
+                wikiLabel: "21st Royal Scots Fusiliers",
+                tartan: { base: '#7f1d1d', s1: '#f8fafc', s2: '#1e293b', fine: '#facc15' },
+                tartanColors: ['#7f1d1d', '#f8fafc', '#1e293b', '#facc15'],
+                feathers: 0,
+                desc: "Lowland Scottish regiment fighting for King George II in the front line at Culloden. Delivered disciplined platoon musket volleys across the waterlogged moor as the Jacobite center charged."
+            },
+            d7: {
+                orderNum: 4,
+                regiment: "4 - Price's 14th Regt. of Foot",
+                chief: 'Lt.-Col. Robert Moore',
+                clan: 'Hanoverian Center • Buff Leather Facings',
+                name: 'Lt.-Col. Robert Moore',
+                shortLabel: "4 - Price's 14th Foot",
+                badgeText: "4 - Price's 14th Foot",
+                facingColor: 0xfef3c7,
+                louisbourg1758: false, quebec1759: false,
+                wikiUrl: 'https://en.wikipedia.org/wiki/West_Yorkshire_Regiment',
+                wikiLabel: "Price's 14th Regiment of Foot",
+                tartan: { base: '#7f1d1d', s1: '#f8fafc', s2: '#1e293b', fine: '#facc15' },
+                tartanColors: ['#7f1d1d', '#f8fafc', '#1e293b', '#facc15'],
+                feathers: 0,
+                desc: "Positioned at the center of the British first line at Culloden, sweeping the boggy heather with musket fire alongside the Royal Artillery 3-pounder guns."
+            },
+            e7: {
+                orderNum: 5,
+                regiment: "5 - Cholmondeley's 34th Regt. of Foot",
+                chief: 'Lt.-Col. Charles Jeffreys',
+                clan: 'Hanoverian Center-Right • Bright Yellow Facings',
+                name: 'Lt.-Col. Charles Jeffreys',
+                shortLabel: "5 - Cholmondeley's 34th",
+                badgeText: "5 - Cholmondeley's 34th",
+                facingColor: 0xfacc15,
+                louisbourg1758: false, quebec1759: false,
+                wikiUrl: 'https://en.wikipedia.org/wiki/34th_(Cumberland)_Regiment_of_Foot',
+                wikiLabel: "Cholmondeley's 34th Foot",
+                tartan: { base: '#7f1d1d', s1: '#f8fafc', s2: '#1e293b', fine: '#facc15' },
+                tartanColors: ['#7f1d1d', '#f8fafc', '#1e293b', '#facc15'],
+                feathers: 0,
+                desc: "Held the right-center of Cumberland's front line at Culloden, pouring overlapping volleys into the MacDonald regiments (`a2`, `b2`, `c2`) advancing across the longer distance on the Jacobite right."
+            },
+            f7: {
+                orderNum: 6,
+                regiment: "6 - 1st Regt. of Foot (The Royal Scots)",
+                chief: 'Lt.-Col. John Ramsay (Brig. Whitmore at Louisbourg)',
+                clan: 'The Royal Regiment • Royal Blue & Gold Facings',
+                name: 'Lt.-Col. John Ramsay (Brig. Whitmore at Louisbourg)',
+                shortLabel: "6 - 1st Royal Scots (Louisbourg '58)",
+                badgeText: "6 - 1st Royal Scots (Louisbourg '58)",
+                facingColor: 0x2563eb,
+                louisbourg1758: true, quebec1759: false,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Royal_Scots',
+                wikiLabel: "1st Regiment of Foot (Royal Scots)",
+                tartan: { base: '#7f1d1d', s1: '#f8fafc', s2: '#1e293b', fine: '#facc15' },
+                tartanColors: ['#7f1d1d', '#f8fafc', '#1e293b', '#facc15'],
+                feathers: 0,
+                desc: "Fought on the British right at Culloden (1746) and sailed to Cape Breton in 1758! The 1st Battalion landed at Gabarus Bay and fought through the 7-week Siege of Louisbourg under Culloden veteran Brig.-Gen. Edward Whitmore (who stayed as Governor of Louisbourg)."
+            },
+            g7: {
+                orderNum: 7,
+                regiment: "7 - Pulteney's 13th Regt. of Foot",
+                chief: 'Lt.-Col. Moses Moreau',
+                clan: 'Hanoverian Right Wing • Philemot Yellow Facings',
+                name: 'Lt.-Col. Moses Moreau',
+                shortLabel: "7 - Pulteney's 13th Foot",
+                badgeText: "7 - Pulteney's 13th Foot",
+                facingColor: 0xd97706,
+                louisbourg1758: false, quebec1759: false,
+                wikiUrl: 'https://en.wikipedia.org/wiki/Somerset_Light_Infantry',
+                wikiLabel: "Pulteney's 13th Regiment of Foot",
+                tartan: { base: '#7f1d1d', s1: '#f8fafc', s2: '#1e293b', fine: '#facc15' },
+                tartanColors: ['#7f1d1d', '#f8fafc', '#1e293b', '#facc15'],
+                feathers: 0,
+                desc: "Brought up from the reserve to extend the extreme right wing of the British front line at Culloden, outflanking the advancing Jacobite MacDonald regiments."
+            },
+            h7: {
+                orderNum: 8,
+                regiment: "8 - Wolfe's 8th Regt. of Foot",
+                chief: 'Maj. James Wolfe (Brig.-Gen. Louisbourg / Maj.-Gen. Quebec)',
+                clan: 'Hero of Louisbourg (1758) & Plains of Abraham (1759)',
+                name: 'Maj. James Wolfe (Brig.-Gen. Louisbourg / Maj.-Gen. Quebec)',
+                shortLabel: "⭐ 8 - Maj. James Wolfe (Louisbourg & Quebec)",
+                badgeText: "⭐ 8 - Maj. James Wolfe (Louisbourg & Quebec)",
+                facingColor: 0xfde047,
+                louisbourg1758: true, quebec1759: true,
+                wikiUrl: 'https://en.wikipedia.org/wiki/James_Wolfe',
+                wikiLabel: "Major-General James Wolfe",
+                tartan: { base: '#7f1d1d', s1: '#f8fafc', s2: '#1e293b', fine: '#facc15' },
+                tartanColors: ['#7f1d1d', '#f8fafc', '#1e293b', '#facc15'],
+                feathers: 0,
+                isWolfe: true,
+                desc: "At Culloden (1746), 19-year-old Brigade-Major James Wolfe refused Cumberland's order to shoot wounded Jacobite Col. Charles Fraser (`h2`). Twelve years later, Wolfe led the Kennington Cove landing at the Siege of Louisbourg (1758) and commanded the British victory on the Plains of Abraham at Quebec (1759)!"
+            },
+        };
+
+        // Generic one-sentence lore for the back ranks, so the inspector never shows blanks.
+        const BACK_RANK_LORE = {
+            a1: { name: '11 - Atholl Brigade Piper Rampart (a1)', role: 'Lord George Murray & Lord Nairne (Rook)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Atholl_Brigade', wikiLabel: 'Atholl Brigade', desc: 'Representing 11 - The Atholl Brigade on the moorland ramparts, sounding the Great Highland Bagpipe charge across Drumossie Moor.',
+                tartan: { base: '#14532d', s1: '#dc2626', s2: '#1e3a8a', fine: '#f8fafc' } },
+            h1: { name: '11 - Atholl Brigade Piper Bastion (h1)', role: 'Highland War Piper & Stone Bastion (Rook)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Great_Highland_bagpipe', wikiLabel: 'Highland War Pipers', desc: 'War pipers of the Atholl Brigade piping the traditional Highland Pibroch to rally the clans through the sleet and cannon smoke at Culloden.',
+                tartan: { base: '#14532d', s1: '#dc2626', s2: '#1e3a8a', fine: '#f8fafc' } },
+            b1: { name: '10 - Lochiel\'s Regt. (b1)', role: 'Donald Cameron of Lochiel — "Gentle Lochiel" (Knight)', louisbourg1758: true, quebec1759: true, wikiUrl: 'https://en.wikipedia.org/wiki/Donald_Cameron_of_Lochiel', wikiLabel: 'Donald Cameron of Lochiel', desc: '10 - Lochiel\'s Regiment (~700 Clan Cameron men). Severely wounded in both ankles at Culloden. Twelve years later, Capt. Hugh Cameron and Lt. Donald Cameron led Lochaber veterans in the 78th Highlanders at Louisbourg (1758) and Quebec (1759)!',
+                tartan: { base: '#991b1b', s1: '#14532d', s2: '#1e293b', fine: '#facc15' } },
+            g1: { name: 'FitzJames\'s Horse Cavalry (g1)', role: 'Franco-Irish Jacobite Dragoon (Knight)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Regiment_of_Fitzjames', wikiLabel: 'FitzJames\'s Horse', desc: 'Elite Franco-Irish cavalry squadron that escorted Prince Charles Edward Stuart and screened the Jacobite retreat toward Ruthven Barracks.',
+                tartan: { base: '#1e3a8a', s1: '#dc2626', s2: '#0f172a', fine: '#facc15' } },
+            c1: { name: '9 - Ardsheal\'s Appin Regt. (c1)', role: 'Charles Stewart of Ardshiel — Lochaber Axeman (Bishop)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Charles_Stewart,_5th_of_Ardshiel', wikiLabel: 'Charles Stewart of Ardshiel', desc: '9 - Ardsheal\'s Appin Regiment (~300 men of Clan Stewart of Appin). Armed with the formidable curved Lochaber poleaxe; lost 92 killed and 65 wounded defending their blue-and-yellow silk banner.',
+                tartan: { base: '#991b1b', s1: '#1d4ed8', s2: '#15803d', fine: '#f8fafc' } },
+            f1: { name: '9 - Appin Guard Lochaber Axeman (f1)', role: 'Clan Stewart of Appin Polearm Guard (Bishop)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Lochaber_axe', wikiLabel: 'Lochaber Axe & Appin Stewarts', desc: 'Elite Highland polearm guard wielding the steel-headed Lochaber axe—designed to hook cavalrymen from the saddle and cleave through bayonet formations.',
+                tartan: { base: '#15803d', s1: '#1e3a8a', s2: '#b91c1c', fine: '#facc15' } },
+            d1: { name: 'Lord George Murray (d1)', role: 'Jacobite Lieutenant-General (Queen)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Lord_George_Murray_(general)', wikiLabel: 'Lord George Murray', desc: 'Brilliant field tactician of the 1745 Rising who personally led the right wing alongside the Atholl Brigade, Clanranald (`b2`), Keppoch (`c2`), and Glengarry (`a2`).',
+                tartan: { base: '#14532d', s1: '#b91c1c', s2: '#1e3a8a', fine: '#facc15' } },
+            e1: { name: 'Bonnie Prince Charlie (e1)', role: 'Prince Charles Edward Stuart — Royal Standard (King)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Charles_Edward_Stuart', wikiLabel: 'Charles Edward Stuart', desc: 'The Young Pretender in his Royal Stuart scarlet tartan coat, blue sash, silver Star of the Order of the Thistle, white cockade bonnet, and towering crimson-and-gold Royal Standard of Scotland.',
+                tartan: { base: '#b91c1c', s1: '#15803d', s2: '#1e3a8a', fine: '#fde047' } },
+            a8: { name: 'Belford\'s Royal Artillery Battery (a8)', role: 'Col. William Belford & Col. George Williamson (Rook)', louisbourg1758: true, quebec1759: true, wikiUrl: 'https://en.wikipedia.org/wiki/Royal_Artillery', wikiLabel: 'Royal Artillery (1746–1759)', desc: '3-pounder brass field cannon manned by Royal Artillery gunners. Artillery officers from this corps—led by Col. George Williamson—commanded the British siege batteries at Both Louisbourg in 1758 and Quebec in 1759!' },
+            h8: { name: 'Royal Artillery Right Battery (h8)', role: '3-Pounder Brass Field Gun & Crew (Rook)', louisbourg1758: true, quebec1759: true, wikiUrl: 'https://en.wikipedia.org/wiki/Siege_of_Louisbourg_(1758)', wikiLabel: 'Siege of Louisbourg (1758)', desc: 'Positioned between the British infantry regiments at Culloden; twelve years later, Royal Artillery siege mortars bombarded the King\'s and Dauphin Bastions at Louisbourg (1758) and the walls of Quebec (1759).' },
+            b8: { name: 'Cobham\'s 10th Dragoons (b8)', role: 'Hanoverian Heavy Cavalry (Knight)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/10th_Royal_Hussars', wikiLabel: 'Cobham\'s 10th Dragoons', desc: 'Heavy Government cavalry regiment that breached the Culwhiniac enclosure walls on the Jacobite right flank during the Battle of Culloden.' },
+            g8: { name: 'Kerr\'s 11th Dragoons (g8)', role: 'Earl of Ancram\'s Hanoverian Cavalry (Knight)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/11th_Hussars', wikiLabel: 'Kerr\'s 11th Dragoons', desc: 'Commanded by Lord Mark Kerr and the Earl of Ancram on the left wing at Culloden, screening the British infantry and pursuing retreating forces.' },
+            c8: { name: 'British Grenadier Guard — Brig. Edward Whitmore (c8)', role: 'Mitre-Capped Assault Infantry & Governor of Louisbourg (Bishop)', louisbourg1758: true, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Edward_Whitmore', wikiLabel: 'Brig.-Gen. Edward Whitmore', desc: 'Represents the Grenadier companies and Culloden veteran Edward Whitmore—who returned in 1758 as Brigadier-General at the Siege of Louisbourg and served as British Military Governor of Cape Breton (1758–1761)!' },
+            f8: { name: 'Louisbourg Grenadiers — Right Flank (f8)', role: 'Elite Mitre-Capped Shock Infantry (Bishop)', louisbourg1758: true, quebec1759: true, wikiUrl: 'https://en.wikipedia.org/wiki/Louisbourg_Grenadiers', wikiLabel: 'Louisbourg Grenadiers', desc: 'Elite grenadier assault troops wearing tall brass-fronted Mitre Caps. At Louisbourg (1758) and Quebec (1759), Wolfe formed the famous "Louisbourg Grenadiers" to spearhead the landings and the Plains of Abraham!' },
+            d8: { name: 'Lt.-Gen. Henry Hawley (d8)', role: 'Commander of Hanoverian Cavalry (Queen)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Henry_Hawley', wikiLabel: 'Lt.-Gen. Henry Hawley', desc: 'Senior Hanoverian commander ("Hangman Hawley") to whom young Major James Wolfe (`h7`) served as Brigade-Major and aide-de-camp during the Battle of Culloden.' },
+            e8: { name: 'Duke of Cumberland (e8)', role: 'Prince William Augustus — Commander-in-Chief (King)', louisbourg1758: false, quebec1759: false, wikiUrl: 'https://en.wikipedia.org/wiki/Prince_William,_Duke_of_Cumberland', wikiLabel: 'Duke of Cumberland', desc: 'Third son of King George II and Commander-in-Chief of the British Government army at Culloden, dressed in his scarlet coat, gold braid, and blue Garter riband.' },
+        };
+
+        const CULLODEN_WIKI = { url: 'https://en.wikipedia.org/wiki/Battle_of_Culloden', label: 'Battle of Culloden' };
 
         const UNIT_LORE = {
             w: {
                 faction: 'Jacobite Highlanders (Celtic)',
                 p: {
-                    name: 'Highland Clan Chieftain (1–8 Front Line)',
-                    desc: 'Commander of one of the first 8 historic Jacobite regiments at Culloden, armed with basket-hilted broadsword, spiked targe, and eagle-feathered blue bonnet.'
+                    name: 'Highland Clan Chief',
+                    role: 'Front-Line Jacobite Regiment',
+                    louisbourg1758: true, quebec1759: true,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/78th_Fraser_Highlanders',
+                    wikiLabel: '78th Fraser Highlanders',
+                    desc: 'Armed with a spiked targe and basket-hilted broadsword.'
                 },
                 r: {
-                    name: 'Highland War Piper & Rampart (Atholl / Perth Reserve)',
-                    desc: 'Clan piper with Great Highland Bagpipes atop a fortified cairn, rallying the 8 front-line regiments across Drumossie Moor.'
+                    name: 'Atholl Piper Rampart',
+                    role: 'Fortified Moorland Bastion & War Piper',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Atholl_Brigade',
+                    wikiLabel: 'Atholl Brigade',
+                    desc: 'Stone breastwork manned by a Highland piper sounding the charge.'
                 },
                 n: {
-                    name: "FitzJames's Jacobite Horse",
-                    desc: 'Mounted Jacobite cavalryman bearing a claymore and tartan saddlecloth, screening the Prince and flanking enemy formations.'
+                    name: 'Highland Dragoon',
+                    role: 'Jacobite Heavy Horseman',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Jacobite_rising_of_1745',
+                    wikiLabel: 'Jacobite Rising of 1745',
+                    desc: 'Mounted officer screening the Highland clans across the moor.'
                 },
                 b: {
-                    name: 'Lochaber Guard Officer (Appin & Lochiel Wing)',
-                    desc: 'Veteran Highland officer from Ardsheal’s Appin & Lochiel’s regiments wielding the formidable Lochaber pole-axe and feathered clan bonnet.'
+                    name: 'Appin Lochaber Axeman',
+                    role: 'Elite Highland Polearm Guard',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Lochaber_axe',
+                    wikiLabel: 'Lochaber Axe',
+                    desc: 'Veteran clansman wielding the long-shafted Lochaber axe.'
                 },
                 q: {
-                    name: 'Lord George Murray (Lieutenant-General)',
-                    desc: 'Brilliant Jacobite field tactician in gilded tartan sash, dual flintlock pistols, and basket-hilted broadsword.'
+                    name: 'Lord George Murray',
+                    role: 'Jacobite Lieutenant-General',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Lord_George_Murray_(general)',
+                    wikiLabel: 'Lord George Murray',
+                    desc: 'Brilliant field tactician of the Jacobite army.'
                 },
                 k: {
-                    name: 'Bonnie Prince Charlie (Prince Charles Edward Stuart)',
-                    desc: 'The Young Chevalier at E1 wearing the Royal Stuart scarlet-and-gold tartan coat, white silk sash, Silver Star of the Order of the Thistle, 3 royal eagle feathers, and the Royal Standard of Scotland.'
-                }
+                    name: 'Bonnie Prince Charlie',
+                    role: 'Prince Charles Edward Stuart',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Charles_Edward_Stuart',
+                    wikiLabel: 'Charles Edward Stuart',
+                    desc: 'Leader of the Jacobite Rising beneath the Royal Standard.'
+                },
             },
             b: {
                 faction: 'British Government Army (Red Coats)',
                 p: {
-                    name: "Barrell's 4th Foot Infantryman",
-                    desc: 'Disciplined British line soldier in madder-red coat, white buff crossbelts, tricorn hat, and Brown Bess bayonet musket.'
+                    name: 'Hanoverian Line Infantry',
+                    role: 'British Regiment of Foot',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Battle_of_Culloden',
+                    wikiLabel: 'Battle of Culloden',
+                    desc: 'Armed with a Brown Bess musket and 17-inch socket bayonet.'
                 },
                 r: {
-                    name: 'Royal Artillery 3-Pounder Battery',
-                    desc: 'Brass cannon emplacement commanded by Captain Cunningham, crewed by Royal Artillery gunners in dark blue and scarlet coats.'
+                    name: 'Royal Artillery 3-Pounder',
+                    role: 'Col. William Belford\'s Gun Battery',
+                    louisbourg1758: true, quebec1759: true,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Royal_Artillery',
+                    wikiLabel: 'Royal Artillery',
+                    desc: 'Wheeled brass field cannon manned by a Royal Artillery gunner.'
                 },
                 n: {
-                    name: "Cobham's 10th Dragoon",
-                    desc: 'Heavy British cavalryman mounted on a bay charger with brass-hilted sabre and scarlet dragoon coat.'
+                    name: 'Cobham\'s 10th Dragoons',
+                    role: 'Hanoverian Heavy Cavalry',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/10th_Royal_Hussars',
+                    wikiLabel: 'Cobham\'s 10th Dragoons',
+                    desc: 'Government cavalry regiment in scarlet coat and tricorn hat.'
                 },
                 b: {
-                    name: 'King’s Grenadier Officer',
-                    desc: 'Elite assault infantryman wearing the tall embroidered mitre cap and wielding a spontoon halberd.'
+                    name: 'Louisbourg Grenadier Guard',
+                    role: 'Elite Mitre-Capped Assault Infantry',
+                    louisbourg1758: true, quebec1759: true,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Louisbourg_Grenadiers',
+                    wikiLabel: 'Louisbourg Grenadiers',
+                    desc: 'Tall shock infantry wearing the embroidered brass-fronted mitre cap.'
                 },
                 q: {
-                    name: 'Lt-Gen. Henry Hawley',
-                    desc: 'Senior royalist commander in gold-laced crimson coat, white wig, and polished officer sabre.'
+                    name: 'General Henry Hawley',
+                    role: 'Commander of Government Cavalry',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Henry_Hawley',
+                    wikiLabel: 'General Henry Hawley',
+                    desc: 'Senior Hanoverian commander ("Hangman Hawley") in crimson coat and gold lace.'
                 },
                 k: {
-                    name: 'Duke of Cumberland (Prince William Augustus)',
-                    desc: 'Commander-in-Chief of His Majesty’s Forces in ornate scarlet-and-gold frock coat and Order of the Garter star.'
-                }
+                    name: 'Duke of Cumberland',
+                    role: 'Prince William Augustus',
+                    louisbourg1758: false, quebec1759: false,
+                    wikiUrl: 'https://en.wikipedia.org/wiki/Prince_William,_Duke_of_Cumberland',
+                    wikiLabel: 'Duke of Cumberland',
+                    desc: 'Commander-in-Chief of the British Government forces.'
+                },
             }
         };
 
@@ -786,17 +880,18 @@
         const jacobiteBannerTex = createJacobiteRoyalBannerTexture();
         const redcoatTorsoTex = createRedcoatTexture();
 
-        // Pre-build custom tartan materials for each of the 1-8 Clan Regiments (a2-h2)
+// Pre-build custom tartan materials for each regiment (Jacobite a2-h2 + Hanoverian a7-h7)
         const CLAN_TARTAN_MATS = {};
-        Object.keys(JACOBITE_CLAN_CHIEFS).forEach(sq => {
-            const [c1, c2, c3, c4] = JACOBITE_CLAN_CHIEFS[sq].tartanColors;
+        [...Object.keys(JACOBITE_CLAN_CHIEFS), ...Object.keys(HANOVERIAN_REGIMENTS)].forEach(sq => {
+            const src = JACOBITE_CLAN_CHIEFS[sq] || HANOVERIAN_REGIMENTS[sq];
+            const [c1, c2, c3, c4] = src.tartanColors;
             CLAN_TARTAN_MATS[sq] = new THREE.MeshStandardMaterial({
                 map: createTartanTexture(c1, c2, c3, c4),
                 roughness: 0.72
             });
         });
 
-        const SHARED_MATS = {
+                const SHARED_MATS = {
             skin: new THREE.MeshStandardMaterial({ color: 0xe8be9e, roughness: 0.6 }),
             celticPlaid: new THREE.MeshStandardMaterial({ map: tartanGreenTex, roughness: 0.75 }),
             celticRoyalPlaid: new THREE.MeshStandardMaterial({ map: tartanRoyalTex, roughness: 0.65 }),
@@ -1483,7 +1578,6 @@
         let isAnimating = false;
         let pendingPromotionMove = null;
         let lastMoveSquares = [];
-        let showClanBadges = true; // Shows floating 3D badges for Bonnie Prince Charlie + 1-8 Regiments
 
         // Piece evaluation weights for AI commander
         const PIECE_VALUES = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
@@ -1492,63 +1586,115 @@
             b: { p: '💂', r: '💣', n: '🏇', b: '🎖️', q: '🗡️', k: '👑' }
         };
 
-        // Map current square -> clanProfile so each of the 1-8 Clan Chiefs retains their regiment identity as they march
+// Map current square -> regiment profile so each regiment retains its identity as it marches
         let activeClanChiefMap = {};
-        const badgeElements = {}; // key -> DOM element in #labels-overlay
+        let activeHanoverianMap = {};
+        const badgeElements = {}; // key -> DOM element in #labels-container
+        let badgeMode = 'all'; // 'all' | 'leaders' | 'off'
+        let showVeteranRings = false;
+        let veteranRingMeshes = [];
+        let combatToastTimer = null;
+        const veteranRingGeo = new THREE.RingGeometry(0.44, 0.52, 32);
+        const veteranRingMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
 
         function resetClanChiefLocations() {
             activeClanChiefMap = {};
             Object.keys(JACOBITE_CLAN_CHIEFS).forEach(sq => {
-                activeClanChiefMap[sq] = {
-                    ...JACOBITE_CLAN_CHIEFS[sq],
-                    originSquare: sq
-                };
+                activeClanChiefMap[sq] = { ...JACOBITE_CLAN_CHIEFS[sq], originSquare: sq };
+            });
+            activeHanoverianMap = {};
+            Object.keys(HANOVERIAN_REGIMENTS).forEach(sq => {
+                activeHanoverianMap[sq] = { ...HANOVERIAN_REGIMENTS[sq], originSquare: sq };
             });
         }
         resetClanChiefLocations();
 
+        function displayNameForMesh(mesh) {
+            if (!mesh || !mesh.userData) return 'Soldier';
+            const profile = mesh.userData.clanProfile;
+            if (profile) return profile.regiment;
+            const sq = mesh.userData.square;
+            if (sq && BACK_RANK_LORE[sq]) return BACK_RANK_LORE[sq].name;
+            const info = UNIT_LORE[mesh.userData.color] && UNIT_LORE[mesh.userData.color][mesh.userData.type];
+            return info ? info.name : 'Soldier';
+        }
+
+        function displayNameForSquare(sq) {
+            const mesh = pieceMeshes[sq];
+            if (mesh) return displayNameForMesh(mesh);
+            const piece = chess.get(sq);
+            if (!piece) return 'Soldier';
+            if (BACK_RANK_LORE[sq]) return BACK_RANK_LORE[sq].name;
+            const info = UNIT_LORE[piece.color][piece.type];
+            return info ? info.name : 'Soldier';
+        }
+
+        function showCombatToast(text) {
+            const toast = document.getElementById('combat-toast');
+            const toastText = document.getElementById('combat-toast-text');
+            if (!toast || !toastText) return;
+            toastText.textContent = text;
+            toast.classList.remove('hidden');
+            if (combatToastTimer) clearTimeout(combatToastTimer);
+            combatToastTimer = setTimeout(() => { toast.classList.add('hidden'); }, 2500);
+        }
+
+        function hideCombatToast() {
+            const toast = document.getElementById('combat-toast');
+            if (toast) toast.classList.add('hidden');
+            if (combatToastTimer) { clearTimeout(combatToastTimer); combatToastTimer = null; }
+        }
+
+        function updateVeteranRings() {
+            veteranRingMeshes.forEach(r => { scene.remove(r); });
+            veteranRingMeshes = [];
+            if (!showVeteranRings) return;
+            Object.keys(pieceMeshes).forEach(sq => {
+                const mesh = pieceMeshes[sq];
+                const profile = mesh && mesh.userData ? mesh.userData.clanProfile : null;
+                const vet = profile || BACK_RANK_LORE[sq];
+                if (!vet || !(vet.louisbourg1758 || vet.quebec1759)) return;
+                const ring = new THREE.Mesh(veteranRingGeo, veteranRingMat);
+                ring.rotation.x = -Math.PI / 2;
+                ring.position.set(mesh.position.x, 0.02, mesh.position.z);
+                scene.add(ring);
+                veteranRingMeshes.push(ring);
+            });
+        }
+
         function rebuildFloatingBadgesDOM() {
-            const overlay = document.getElementById('labels-overlay');
+            const overlay = document.getElementById('labels-container');
             overlay.innerHTML = '';
             Object.keys(badgeElements).forEach(k => delete badgeElements[k]);
 
             Object.keys(pieceMeshes).forEach(sq => {
                 const mesh = pieceMeshes[sq];
-                if (!mesh || mesh.userData.color !== 'w') return;
-
-                const isPrince = mesh.userData.type === 'k';
-                const clan = mesh.userData.clanProfile;
-                if (!isPrince && !clan) return;
-
-                const el = document.createElement('div');
-                el.className = 'unit-3d-badge';
-
-                if (isPrince) {
-                    el.innerHTML = `
-                        <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/95 via-yellow-400/95 to-amber-500/95 text-slate-950 font-cinzel font-extrabold text-[10px] sm:text-[11px] tracking-wider shadow-[0_4px_14px_rgba(250,204,21,0.55)] border border-white/60 flex items-center gap-1">
-                            <span>👑</span>
-                            <span>BONNIE PRINCE CHARLIE (${sq.toUpperCase()})</span>
-                        </div>
-                    `;
-                } else if (clan) {
-                    const isClanranald = clan.isHighlightedClanranald;
-                    const badgeClasses = isClanranald
-                        ? 'px-2.5 py-1 rounded-lg bg-emerald-900/95 text-amber-200 border border-amber-400/80 shadow-[0_0_12px_rgba(250,204,21,0.45)] font-semibold text-[10px]'
-                        : 'px-2 py-0.5 rounded-md bg-slate-900/88 text-emerald-300 border border-emerald-500/40 shadow-md font-medium text-[9.5px]';
-
-                    el.innerHTML = `
-                        <div class="${badgeClasses} flex items-center gap-1">
-                            <span class="font-mono font-bold text-amber-300">#${clan.orderNum}</span>
-                            <span>${isClanranald ? 'Alan MacDonald of Clanranald' : clan.shortLabel.replace(/^#\d+\s*/, '')}</span>
-                        </div>
-                    `;
+                if (!mesh) return;
+                let cls = null, text = null, kind = null;
+                const profile = mesh.userData.clanProfile;
+                if (mesh.userData.type === 'k' && mesh.userData.color === 'w') {
+                    cls = 'piece-label prince'; kind = 'prince';
+                    text = '👑 BONNIE PRINCE CHARLIE (' + sq.toUpperCase() + ')';
+                } else if (mesh.userData.type === 'k' && mesh.userData.color === 'b') {
+                    cls = 'piece-label redcoat'; kind = 'redking';
+                    text = '👑 DUKE OF CUMBERLAND (' + sq.toUpperCase() + ')';
+                } else if (profile && mesh.userData.color === 'w') {
+                    if (profile.isClanranald) { cls = 'piece-label clanranald'; kind = 'clanranald'; text = profile.badgeText; }
+                    else { cls = 'piece-label clan'; kind = 'clan'; text = profile.badgeText; }
+                } else if (profile && mesh.userData.color === 'b') {
+                    if (profile.isWolfe) { cls = 'piece-label wolfe'; kind = 'wolfe'; text = profile.badgeText; }
+                    else { cls = 'piece-label redcoat'; kind = 'redcoat'; text = profile.badgeText; }
+                } else {
+                    return;
                 }
-
+                const el = document.createElement('div');
+                el.className = cls;
+                el.dataset.kind = kind;
+                el.textContent = text;
                 el.addEventListener('click', (ev) => {
                     ev.stopPropagation();
                     handleSquareSelection(sq);
                 });
-
                 overlay.appendChild(el);
                 badgeElements[sq] = el;
             });
@@ -1566,24 +1712,23 @@
                     if (el) el.style.opacity = '0';
                     return;
                 }
-
-                const isPrince = mesh.userData.type === 'k';
-                // Always keep Bonnie Prince Charlie visible; toggle the 1-8 Clan badges via button
-                if (!isPrince && !showClanBadges) {
+                const kind = el.dataset.kind;
+                let visible = false;
+                if (badgeMode === 'all') visible = true;
+                else if (badgeMode === 'leaders') visible = (kind === 'prince' || kind === 'clanranald' || kind === 'clan' || kind === 'wolfe');
+                if (!visible) {
                     el.style.opacity = '0';
                     el.style.pointerEvents = 'none';
                     return;
                 }
-
+                const isPrince = mesh.userData.type === 'k';
                 projVec.copy(mesh.position);
                 projVec.y += isPrince ? 1.65 : 1.32;
                 projVec.project(camera);
-
                 if (projVec.z > 1) {
                     el.style.opacity = '0';
                     return;
                 }
-
                 const x = (projVec.x * 0.5 + 0.5) * width;
                 const y = (-(projVec.y * 0.5) + 0.5) * height;
                 el.style.left = `${x}px`;
@@ -1596,8 +1741,8 @@
         /**
          * Rebuilds all 32 3D pieces on the board to match current chess.js state
          */
-        function syncBoardMeshesFromState() {
-            // Reconstruct activeClanChiefMap from move history so Undo works accurately
+function syncBoardMeshesFromState() {
+            // Reconstruct regiment maps from move history so Undo works accurately
             resetClanChiefLocations();
             const verboseHistory = chess.history({ verbose: true });
             verboseHistory.forEach(m => {
@@ -1606,6 +1751,12 @@
                     delete activeClanChiefMap[m.from];
                 } else if (m.color === 'b' && activeClanChiefMap[m.to]) {
                     delete activeClanChiefMap[m.to];
+                }
+                if (m.color === 'b' && activeHanoverianMap[m.from]) {
+                    activeHanoverianMap[m.to] = activeHanoverianMap[m.from];
+                    delete activeHanoverianMap[m.from];
+                } else if (m.color === 'w' && activeHanoverianMap[m.to]) {
+                    delete activeHanoverianMap[m.to];
                 }
             });
 
@@ -1621,7 +1772,9 @@
                     const cell = board[r][f];
                     if (cell) {
                         const sq = `${FILES[f]}${8 - r}`;
-                        const clanProfile = (cell.color === 'w' && cell.type === 'p') ? activeClanChiefMap[sq] : null;
+                        let clanProfile = null;
+                        if (cell.color === 'w' && cell.type === 'p') clanProfile = activeClanChiefMap[sq] || null;
+                        if (cell.color === 'b' && cell.type === 'p') clanProfile = activeHanoverianMap[sq] || null;
                         const mesh = createSoldierPieceMesh(cell.type, cell.color, clanProfile);
                         const worldPos = squareToWorld(sq);
                         mesh.position.copy(worldPos);
@@ -1634,9 +1787,10 @@
             rebuildFloatingBadgesDOM();
             updateHighlights();
             updateHUD();
+            updateVeteranRings();
         }
 
-        /**
+                /**
          * Updates 3D board ring highlights for selected square, legal moves, last move, and King in check
          */
         function updateHighlights() {
@@ -1686,7 +1840,7 @@
             });
         }
 
-        /**
+/**
          * Updates Unit Inspector Card when a piece is clicked or hovered
          */
         function updateInspector(sq) {
@@ -1694,28 +1848,69 @@
             if (!piece) return;
 
             const mesh = pieceMeshes[sq];
-            const clanProfile = mesh && mesh.userData ? mesh.userData.clanProfile : null;
-            const info = UNIT_LORE[piece.color][piece.type];
-            const factionBadge = document.getElementById('inspector-faction');
+            const profile = mesh && mesh.userData ? mesh.userData.clanProfile : null;
+            const backRank = BACK_RANK_LORE[sq];
 
-            if (clanProfile) {
-                factionBadge.textContent = `${clanProfile.regiment} • ${clanProfile.clan}`;
-                factionBadge.className = 'text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40';
-                document.getElementById('inspector-square').textContent = `Square ${sq.toUpperCase()}`;
-                document.getElementById('inspector-name').textContent = clanProfile.name;
-                document.getElementById('inspector-desc').textContent = clanProfile.desc;
-                return;
-            }
+            let name, role, desc, wikiUrl, wikiLabel, service, badge;
+            let campaigns = [];
 
-            factionBadge.textContent = UNIT_LORE[piece.color].faction;
-            if (piece.color === 'w') {
-                factionBadge.className = 'text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+            if (profile) {
+                name = `${profile.regiment} (${sq.toUpperCase()})`;
+                role = profile.chief;
+                desc = profile.desc;
+                wikiUrl = profile.wikiUrl;
+                wikiLabel = profile.wikiLabel;
+                campaigns = ['Culloden 1746'];
+                if (profile.louisbourg1758) campaigns.push('Louisbourg 1758');
+                if (profile.quebec1759) campaigns.push('Quebec 1759');
+                if (profile.louisbourg1758 && profile.quebec1759) service = 'Louisbourg & Quebec Vet';
+                else if (profile.louisbourg1758) service = 'Louisbourg Veteran';
+                else if (profile.quebec1759) service = 'Quebec Veteran';
+                else service = 'Culloden Only';
+                badge = (profile.isWolfe || profile.isClanranald) ? '⭐' : '🎖️';
+            } else if (backRank) {
+                name = backRank.name;
+                role = backRank.role;
+                desc = backRank.desc;
+                wikiUrl = backRank.wikiUrl || CULLODEN_WIKI.url;
+                wikiLabel = backRank.wikiLabel || CULLODEN_WIKI.label;
+                campaigns = ['Culloden 1746'];
+                if (backRank.louisbourg1758) campaigns.push('Louisbourg 1758');
+                if (backRank.quebec1759) campaigns.push('Quebec 1759');
+                if (backRank.louisbourg1758 && backRank.quebec1759) service = 'Louisbourg & Quebec Vet';
+                else if (backRank.louisbourg1758) service = 'Louisbourg Veteran';
+                else if (backRank.quebec1759) service = 'Quebec Veteran';
+                else service = 'Culloden Only';
+                badge = piece.type === 'k' ? '👑' : '⚔️';
             } else {
-                factionBadge.className = 'text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30';
+                const info = UNIT_LORE[piece.color][piece.type];
+                name = info.name;
+                role = info.role || UNIT_LORE[piece.color].faction;
+                desc = info.desc;
+                wikiUrl = info.wikiUrl || CULLODEN_WIKI.url;
+                wikiLabel = info.wikiLabel || CULLODEN_WIKI.label;
+                campaigns = ['Culloden 1746'];
+                if (info.louisbourg1758) campaigns.push('Louisbourg 1758');
+                if (info.quebec1759) campaigns.push('Quebec 1759');
+                if (info.louisbourg1758 && info.quebec1759) service = 'Louisbourg & Quebec Vet';
+                else if (info.louisbourg1758) service = 'Louisbourg Veteran';
+                else if (info.quebec1759) service = 'Quebec Veteran';
+                else service = 'Culloden Only';
+                badge = piece.type === 'k' ? '👑' : '⚔️';
             }
-            document.getElementById('inspector-square').textContent = `Square ${sq.toUpperCase()}`;
-            document.getElementById('inspector-name').textContent = info.name;
-            document.getElementById('inspector-desc').textContent = info.desc;
+
+            document.getElementById('unit-coord').textContent = sq.toUpperCase();
+            document.getElementById('unit-badge').textContent = badge;
+            document.getElementById('unit-name').textContent = name;
+            document.getElementById('unit-role').textContent = role;
+            document.getElementById('unit-campaigns').innerHTML = campaigns.map(c => {
+                const cls = c === 'Culloden 1746' ? 'campaign-culloden' : c === 'Louisbourg 1758' ? 'campaign-louisbourg' : 'campaign-quebec';
+                return `<span class="campaign-pill ${cls}">${c}</span>`;
+            }).join('');
+            document.getElementById('unit-desc').textContent = desc;
+            document.getElementById('unit-wiki-btn').href = wikiUrl;
+            document.getElementById('unit-wiki-label').textContent = 'Wikipedia: ' + wikiLabel;
+            document.getElementById('unit-service-summary').textContent = service;
         }
 
         /**
@@ -1724,30 +1919,22 @@
         function updateHUD() {
             const turn = chess.turn();
             const turnDot = document.getElementById('turn-dot');
-            const turnTitle = document.getElementById('turn-title');
-            const turnSubtitle = document.getElementById('turn-subtitle');
-            const turnBanner = document.getElementById('turn-banner');
-
-            turnBanner.classList.remove('check-alert');
+            const turnText = document.getElementById('turn-text');
 
             if (chess.game_over()) {
                 turnDot.className = 'w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24]';
-                turnTitle.textContent = 'Battle Concluded';
-                turnSubtitle.textContent = chess.in_checkmate() ? 'Checkmate on the Moor!' : 'Stalemate / Draw';
+                turnText.textContent = chess.in_checkmate() ? 'Battle Concluded — Checkmate' : 'Battle Concluded — Stalemate / Draw';
                 showGameOverModal();
+            } else if (turn === 'w') {
+                turnDot.className = 'w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]';
+                turnText.textContent = chess.in_check()
+                    ? 'Jacobite Highlanders to March — Check! Prince Under Fire'
+                    : 'Jacobite Highlanders to March';
             } else {
-                if (turn === 'w') {
-                    turnDot.className = 'w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]';
-                    turnTitle.textContent = "Jacobite Clans' Turn (White)";
-                    turnSubtitle.textContent = chess.in_check() ? 'WARNING: Bonnie Prince Charlie is under fire!' : 'Select a Highlander to march';
-                } else {
-                    turnDot.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444]';
-                    turnTitle.textContent = "British Red Coats' Turn (Black)";
-                    turnSubtitle.textContent = gameMode === 'ai' ? 'Duke of Cumberland is issuing orders...' : (chess.in_check() ? 'WARNING: Duke of Cumberland is in Check!' : 'Select a Red Coat unit');
-                }
-                if (chess.in_check()) {
-                    turnBanner.classList.add('check-alert');
-                }
+                turnDot.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444]';
+                if (chess.in_check()) turnText.textContent = 'Redcoats to March — Check! Cumberland Under Fire';
+                else if (gameMode === 'ai') turnText.textContent = 'Redcoats to March — AI Commander Issuing Orders';
+                else turnText.textContent = 'Redcoats to March';
             }
 
             // Compute captured pieces from move history
@@ -1761,28 +1948,29 @@
                 }
             });
 
-            const capWEl = document.getElementById('captured-by-white');
-            const capBEl = document.getElementById('captured-by-black');
+            // cap-black = fallen Redcoats (black pieces captured BY white); cap-white = fallen Highlanders
+            const capBlackEl = document.getElementById('cap-black');
+            const capWhiteEl = document.getElementById('cap-white');
 
             if (capturedByW.length === 0) {
-                capWEl.innerHTML = '<span class="text-[11px] text-slate-500 italic">No Red Coats shattered yet</span>';
+                capBlackEl.innerHTML = '<span class="text-[11px] text-slate-500 italic">No Redcoats shattered yet</span>';
             } else {
-                capWEl.innerHTML = capturedByW.map(t => `<span title="${UNIT_LORE.b[t].name}">${PIECE_SYMBOLS.b[t]}</span>`).join('');
+                capBlackEl.innerHTML = capturedByW.map(t => `<span title="${UNIT_LORE.b[t].name}">${PIECE_SYMBOLS.b[t]}</span>`).join('');
             }
 
             if (capturedByB.length === 0) {
-                capBEl.innerHTML = '<span class="text-[11px] text-slate-500 italic">No Highlanders shattered yet</span>';
+                capWhiteEl.innerHTML = '<span class="text-[11px] text-slate-500 italic">No Highlanders shattered yet</span>';
             } else {
-                capBEl.innerHTML = capturedByB.map(t => `<span title="${UNIT_LORE.w[t].name}">${PIECE_SYMBOLS.w[t]}</span>`).join('');
+                capWhiteEl.innerHTML = capturedByB.map(t => `<span title="${UNIT_LORE.w[t].name}">${PIECE_SYMBOLS.w[t]}</span>`).join('');
             }
 
-            document.getElementById('score-white').textContent = capturedByW.length ? `${capturedByW.length} shattered` : '';
-            document.getElementById('score-black').textContent = capturedByB.length ? `${capturedByB.length} shattered` : '';
+            document.getElementById('score-black').textContent = capturedByW.length ? `${capturedByW.length} shattered` : '';
+            document.getElementById('score-white').textContent = capturedByB.length ? `${capturedByB.length} shattered` : '';
 
             // Move History Log
-            const moveLog = document.getElementById('move-history');
-            const moveBadge = document.getElementById('move-count-badge');
-            moveBadge.textContent = `Turn ${Math.floor(history.length / 2) + 1}`;
+            const moveLog = document.getElementById('move-log');
+            const moveCount = document.getElementById('move-count');
+            moveCount.textContent = `Turn ${Math.floor(history.length / 2) + 1}`;
 
             if (history.length === 0) {
                 moveLog.innerHTML = '<div class="text-[11px] text-slate-500 italic py-2 text-center">16 April 1746 — The armies stand arrayed across Drumossie Moor.</div>';
@@ -1793,7 +1981,7 @@
                     const wMove = history[i];
                     const bMove = history[i + 1];
                     rowsHtml += `
-                        <div class="flex items-center justify-between px-2 py-1 rounded bg-slate-900/50 border border-white/5">
+                        <div class="move-row">
                             <span class="text-slate-500 w-7">${moveNum}.</span>
                             <span class="text-emerald-300 flex-1">${wMove.san}</span>
                             <span class="text-red-300 flex-1 text-right">${bMove ? bMove.san : '...'}</span>
@@ -1807,10 +1995,10 @@
             document.getElementById('btn-undo').disabled = history.length === 0 || isAnimating;
         }
 
-        /**
+                /**
          * Executes a validated chess move with 3D march, attack swing, and shatter physics
          */
-        function executeMoveOnBoard(moveObj) {
+function executeMoveOnBoard(moveObj) {
             isAnimating = true;
             selectedSquare = null;
             legalMovesForSelected = [];
@@ -1818,11 +2006,11 @@
 
             const fromSq = moveObj.from;
             const toSq = moveObj.to;
+            const attackerName = displayNameForSquare(fromSq);
 
             // Check if a piece is being captured (including En Passant)
             let capturedSq = null;
             if (moveObj.flags.includes('e')) {
-                // En passant capture square
                 const epRank = moveObj.color === 'w' ? parseInt(toSq[1], 10) - 1 : parseInt(toSq[1], 10) + 1;
                 capturedSq = `${toSq[0]}${epRank}`;
             } else if (moveObj.captured) {
@@ -1830,17 +2018,24 @@
             }
 
             const capturedMesh = capturedSq ? pieceMeshes[capturedSq] : null;
+            const defenderName = capturedMesh ? displayNameForMesh(capturedMesh) : null;
             if (capturedSq && pieceMeshes[capturedSq]) {
                 delete pieceMeshes[capturedSq];
             }
 
             animateChessMove(fromSq, toSq, capturedMesh, () => {
-                // Update activeClanChiefMap if a Jacobite Clan Chief moved or was captured
+                // Update regiment maps if a regiment pawn moved or was captured
                 if (moveObj.color === 'w' && activeClanChiefMap[fromSq]) {
                     activeClanChiefMap[toSq] = activeClanChiefMap[fromSq];
                     delete activeClanChiefMap[fromSq];
                 } else if (capturedSq && activeClanChiefMap[capturedSq]) {
                     delete activeClanChiefMap[capturedSq];
+                }
+                if (moveObj.color === 'b' && activeHanoverianMap[fromSq]) {
+                    activeHanoverianMap[toSq] = activeHanoverianMap[fromSq];
+                    delete activeHanoverianMap[fromSq];
+                } else if (capturedSq && activeHanoverianMap[capturedSq]) {
+                    delete activeHanoverianMap[capturedSq];
                 }
 
                 // Update pieceMeshes dictionary
@@ -1880,6 +2075,10 @@
                 rebuildFloatingBadgesDOM();
                 updateHighlights();
                 updateHUD();
+                updateVeteranRings();
+                if (defenderName) {
+                    showCombatToast(`${attackerName} shatters ${defenderName}!`);
+                }
 
                 // If in vs AI mode and it's Black's turn, schedule AI Commander move
                 if (!chess.game_over() && gameMode === 'ai' && chess.turn() === 'b') {
@@ -1890,7 +2089,7 @@
             });
         }
 
-        function evaluateBoardState(gameInstance) {
+                function evaluateBoardState(gameInstance) {
             const board = gameInstance.board();
             let score = 0;
             for (let r = 0; r < 8; r++) {
@@ -1987,7 +2186,7 @@
             cameraState.targetTheta = preset.theta;
             cameraState.targetPhi = preset.phi;
             cameraState.targetRadius = preset.radius;
-            document.getElementById('camera-label').textContent = preset.name;
+            document.getElementById('cam-label').textContent = preset.name;
         }
 
         function handleSquareSelection(sq) {
@@ -2103,43 +2302,49 @@
             });
         });
 
-        // Mode Toggle (vs AI / 2-Player Pass & Play)
+// Mode Toggle (vs AI / 2-Player Pass & Play)
         document.getElementById('btn-mode').addEventListener('click', () => {
             gameMode = gameMode === 'ai' ? '2p' : 'ai';
-            document.getElementById('mode-label').textContent = gameMode === 'ai' ? 'vs AI (Commander)' : '2P Pass & Play';
+            document.getElementById('mode-label').textContent = gameMode === 'ai' ? 'Mode: vs AI Commander' : 'Mode: 2 Players';
             updateHUD();
             if (gameMode === 'ai' && chess.turn() === 'b' && !chess.game_over()) {
                 setTimeout(makeAICommanderMove, 350);
             }
         });
 
-        // Spot Bonnie Prince Charlie & 1-8 Front-Line Clan Regiments Toggle Button
+        // Badge Mode Cycle Button: All Regts -> Leaders only -> Off -> All Regts
         document.getElementById('btn-clans').addEventListener('click', () => {
-            showClanBadges = !showClanBadges;
-            document.getElementById('clans-label').textContent = showClanBadges
-                ? 'Spot Prince & 1–8 Clans'
-                : 'Show 1–8 Clan Badges';
+            badgeMode = badgeMode === 'all' ? 'leaders' : badgeMode === 'leaders' ? 'off' : 'all';
+            document.getElementById('clans-label').textContent =
+                badgeMode === 'all' ? 'Badges: All Regts' :
+                badgeMode === 'leaders' ? 'Badges: Leaders' : 'Badges: Off';
+        });
 
-            // Focus camera on the Jacobite Front Line & inspect Alan MacDonald of Clanranald or Bonnie Prince Charlie
-            setCameraPreset(0);
-            if (chess.get('b2') && chess.get('b2').color === 'w') {
-                updateInspector('b2');
-                selectedSquare = 'b2';
-                legalMovesForSelected = chess.moves({ square: 'b2', verbose: true });
-                updateHighlights();
-            } else if (chess.get('e1')) {
-                updateInspector('e1');
+        // Louisbourg & Quebec Veterans Highlight Toggle
+        document.getElementById('btn-louisbourg').addEventListener('click', () => {
+            showVeteranRings = !showVeteranRings;
+            updateVeteranRings();
+            if (showVeteranRings) {
+                let count = 0;
+                Object.keys(pieceMeshes).forEach(sq => {
+                    const profile = pieceMeshes[sq] && pieceMeshes[sq].userData ? pieceMeshes[sq].userData.clanProfile : null;
+                    const vet = profile || BACK_RANK_LORE[sq];
+                    if (vet && (vet.louisbourg1758 || vet.quebec1759)) count++;
+                });
+                showCombatToast(`⚓ ${count} Louisbourg & Quebec veterans highlighted`);
+            } else {
+                showCombatToast('Veteran highlights cleared');
             }
         });
 
         // Camera View Cycle Button
-        document.getElementById('btn-camera').addEventListener('click', () => {
+        document.getElementById('btn-cam').addEventListener('click', () => {
             setCameraPreset(currentCameraPreset + 1);
         });
 
         // Undo Move Button
         document.getElementById('btn-undo').addEventListener('click', () => {
-            if (isAnimating) return;
+            if (isAnimating || chess.game_over()) return;
             if (gameMode === 'ai') {
                 chess.undo();
                 chess.undo();
@@ -2155,8 +2360,7 @@
         // Sound Toggle Button
         document.getElementById('btn-sound').addEventListener('click', () => {
             soundFX.enabled = !soundFX.enabled;
-            document.getElementById('icon-sound-on').classList.toggle('hidden', !soundFX.enabled);
-            document.getElementById('icon-sound-off').classList.toggle('hidden', soundFX.enabled);
+            document.getElementById('sound-label').textContent = soundFX.enabled ? '🔊 SFX' : '🔇 Muted';
         });
 
         // Reset / New Battle Function
@@ -2168,6 +2372,11 @@
             isAnimating = false;
             document.getElementById('gameover-modal').classList.add('hidden');
             document.getElementById('gameover-modal').classList.remove('flex');
+            const promoModal = document.getElementById('promo-modal');
+            promoModal.classList.add('hidden');
+            promoModal.classList.remove('flex');
+            pendingPromotionMove = null;
+            hideCombatToast();
             syncBoardMeshesFromState();
             setCameraPreset(0);
         }
@@ -2180,10 +2389,10 @@
         });
 
         // Pawn Promotion Selection Buttons
-        document.querySelectorAll('#promotion-options button').forEach(btn => {
+        document.querySelectorAll('.promo-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const promoPiece = btn.getAttribute('data-piece');
-                const promoModal = document.getElementById('promotion-modal');
+                const promoPiece = btn.getAttribute('data-promo');
+                const promoModal = document.getElementById('promo-modal');
                 promoModal.classList.add('hidden');
                 promoModal.classList.remove('flex');
 
@@ -2202,7 +2411,7 @@
             });
         });
 
-        function showGameOverModal() {
+                function showGameOverModal() {
             const modal = document.getElementById('gameover-modal');
             const badge = document.getElementById('gameover-badge');
             const title = document.getElementById('gameover-title');
@@ -2351,16 +2560,14 @@
 
         window.onload = function () {
             syncBoardMeshesFromState();
-            updateInspector('b2'); // Default inspector highlights #2 Clanranald's Regt. (Alan MacDonald of Clanranald)
+            updateInspector('h7'); // Default inspector highlights #2 Clanranald's Regt. (Alan MacDonald of Clanranald)
             animateLoop();
         };
     </script>
 
-
     <!-- Mobile patch: Info toggle, portrait camera fit, pinch-to-zoom -->
     <script>
         (function () {
-            // 1. Info button: opens/closes the inspector + captures bottom sheet on small screens.
             var infoBtn = document.createElement('button');
             infoBtn.id = 'mobile-info-toggle';
             infoBtn.type = 'button';
@@ -2370,18 +2577,16 @@
             });
             document.body.appendChild(infoBtn);
 
-            // 2. Portrait camera fit: narrow screens get a wider FOV + pulled-back camera
-            // so the whole board fits instead of being cropped left/right. Desktop untouched.
             var baseFov = 42;
             function mobileCameraFit() {
                 var aspect = window.innerWidth / window.innerHeight;
                 var preset = CAMERA_PRESETS[currentCameraPreset];
                 var fov = baseFov, mult = 1, phi = preset.phi;
                 if (aspect < 1) {
-                    var k = 1 - aspect;              // 0 on square, ~0.54 on a portrait phone
-                    fov = Math.min(75, baseFov + k * 48); // up to ~68deg vertical FOV
-                    mult = 1 + k * 1.0;              // pull back up to ~1.5x
-                    phi = Math.max(0.5, preset.phi - k * 0.55); // more top-down so the board reads
+                    var k = 1 - aspect;
+                    fov = Math.min(82, baseFov + k * 60);
+                    mult = 1 + k * 1.45;
+                    phi = Math.max(0.45, preset.phi - k * 0.6);
                 }
                 camera.fov = fov;
                 camera.updateProjectionMatrix();
@@ -2393,21 +2598,18 @@
             window.addEventListener('resize', mobileCameraFit);
             mobileCameraFit();
 
-            // 3. Pinch-to-zoom (two-finger). The main pointer handlers only know
-            // single-pointer orbit, so pinch is tracked on touch events: while two
-            // fingers are down, orbit is paused and the spread controls the zoom.
             var pinchDist = 0;
             var canvas = renderer.domElement;
             canvas.addEventListener('touchstart', function (e) {
                 if (e.touches.length === 2) {
                     pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                    cameraState.isDragging = false;   // pause orbit during pinch
-                    cameraState.dragDistance = 999;   // never treat a pinch as a board tap
+                    cameraState.isDragging = false;
+                    cameraState.dragDistance = 999;
                 }
             }, { passive: true });
             canvas.addEventListener('touchmove', function (e) {
                 if (e.touches.length === 2 && pinchDist > 0) {
-                    e.preventDefault(); // stop the browser pinch-zooming the page
+                    e.preventDefault();
                     var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                     if (d > 0) {
                         cameraState.targetRadius = Math.max(6, Math.min(22, cameraState.targetRadius * (pinchDist / d)));
